@@ -1,98 +1,167 @@
 # CodeNexus — AI-Powered Code Editor
+<!-- Version: 1.0 | Last Updated: June 2026 -->
+
+---
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION A: THE WHAT — Project Overview                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
 
 ## Project Overview
-CodeNexus is a browser-based AI-powered code editor with real problem-solving features.
-It is NOT a Copilot clone. It focuses on intent-based refactoring, visual code explanation,
-and persistent decision memory that makes the AI smarter over time.
 
-Key differentiators: Intent Mode, Explain My Code (visual), Decision Memory.
+CodeNexus is a browser-based AI-powered code editor with real problem-solving features.
+This is NOT a Copilot clone — it focuses on understanding intent, visualizing code, and
+learning from decisions.
+
+**Key differentiators:**
+- **Intent Mode** — AI understands _what improvement you want_ (performance, security, readability) and transforms code accordingly
+- **Explain My Code** — Interactive visual diagrams showing file dependencies, function call graphs, and data flow
+- **Decision Memory** — AI remembers your past architectural decisions and coding preferences, getting smarter over time
+
+---
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION B: Tech Stack                                  -->
+<!-- ═══════════════════════════════════════════════════════ -->
 
 ## Tech Stack
-- **Frontend:** React 18 + Vite 5 + Zustand 4 (state) + Monaco Editor
-- **Backend:** Node.js 20 + Express 4 + MongoDB 7 (Mongoose 8) + Socket.IO 4
-- **AI:** OpenAI GPT-4o via `openai` npm package (provider-agnostic abstraction)
-- **Visualization:** React Flow 11 + D3.js 7 + dagre (layout)
-- **Terminal:** @xterm/xterm 5
-- **Styling:** Vanilla CSS with CSS variables (NO Tailwind)
-- **Testing:** Vitest + @testing-library/react + Supertest
+
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 18 + Vite 5 + Zustand 4 (state) + Monaco Editor |
+| **Backend** | Node.js 20 + Express 4 + MongoDB 7 (Mongoose 8) + Socket.IO 4 |
+| **AI** | OpenAI GPT-4o via `openai` npm package (provider-agnostic abstraction) |
+| **Visualization** | React Flow 11 + D3.js 7 + dagre (layout engine) |
+| **Terminal** | @xterm/xterm 5 |
+| **Styling** | Vanilla CSS with CSS custom properties (**NOT** Tailwind) |
+| **Testing** | Vitest + @testing-library/react + Supertest |
+| **Icons** | Lucide React |
+
+---
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION C: Architecture                                -->
+<!-- ═══════════════════════════════════════════════════════ -->
 
 ## Architecture
-- Monorepo: `client/` (React) + `server/` (Express) + `shared/` (constants)
-- State management: Zustand stores in `client/src/stores/`
-- AI calls ALWAYS go through the backend — NEVER expose API keys to the client
-- All AI providers implement the same interface via `server/src/services/ai/AIService.js`
-- Prompts are template functions in `server/src/prompts/`
-- Database: MongoDB with Mongoose models in `server/src/models/`
 
-## Key Design Decisions (DO NOT OVERRIDE)
-1. Use Zustand, NOT Redux or Context API for global state
-2. Use vanilla CSS with CSS variables, NOT Tailwind or CSS-in-JS
-3. Use Mongoose ODM, NOT raw MongoDB driver or Prisma
-4. Use SSE for AI streaming, WebSocket via Socket.IO for real-time collab
-5. JWT auth with httpOnly cookies, NOT localStorage
-6. Use Joi or Zod for request validation, NOT manual checks
-7. Use Lucide React for icons, NOT FontAwesome or Material Icons
+- **Monorepo:** `client/` (React + Vite) + `server/` (Express) + `shared/` (constants, types)
+- **State management:** Zustand stores in `client/src/stores/` — one store per domain
+- **AI calls ALWAYS go through the backend** — NEVER expose API keys to the client
+- **AI provider abstraction:** All providers implement the same interface via `server/src/services/ai/AIService.js`
+- **Prompt templates:** Template functions in `server/src/prompts/` (return `{ system, user }` objects)
+- **Database:** MongoDB with Mongoose ODM, models in `server/src/models/`
+- **Real-time:** Socket.IO for collaboration, SSE for AI response streaming
+
+---
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- THE WHY — Key Design Decisions                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<rules>
+
+## Key Design Decisions — DO NOT OVERRIDE
+
+These decisions are intentional and battle-tested. Do not "fix" them:
+
+1. **Zustand**, NOT Redux or Context API — simpler API, smaller bundle, better selector performance
+2. **Vanilla CSS with custom properties**, NOT Tailwind or CSS-in-JS — full design control, no build dependency
+3. **Mongoose ODM**, NOT raw MongoDB driver or Prisma — mature ecosystem, schema validation, middleware hooks
+4. **SSE for AI streaming**, Socket.IO for real-time collab — SSE is simpler for one-way server→client AI responses
+5. **JWT with httpOnly cookies**, NOT localStorage — XSS-resistant token storage
+6. **Joi or Zod for validation**, NOT manual checks — declarative schemas, automatic error messages
+7. **Lucide React for icons**, NOT FontAwesome or Material — tree-shakeable, consistent style, MIT license
+
+</rules>
+
+---
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- THE HOW — Rules of Engagement                          -->
+<!-- ═══════════════════════════════════════════════════════ -->
 
 ## Coding Conventions
-- ES Modules (`import`/`export`), NOT CommonJS (`require`)
-- Functional React components with hooks, NEVER class components
-- `async`/`await`, NEVER `.then()` chains
-- camelCase for variables and functions, PascalCase for components and models
-- 2-space indentation, single quotes, trailing commas
-- Every component file exports a single default component
-- Custom hooks start with `use` prefix (e.g., `useAI`, `useEditor`)
-- Zustand stores use the `create` function from `zustand`
 
-## File Naming
-- React components: `PascalCase.jsx` (e.g., `ChatPanel.jsx`)
-- Hooks: `camelCase.js` starting with `use` (e.g., `useAI.js`)
-- Stores: `camelCase` ending with `Store` (e.g., `aiStore.js`)
-- Services: `camelCase` ending with `Service` (e.g., `aiService.js`)
-- CSS: kebab-case or feature name (e.g., `chat.css`, `visualize.css`)
-- Backend routes: `kebab-case.routes.js` (e.g., `ai.routes.js`)
-- Backend controllers: `kebab-case.controller.js`
-- Backend models: `PascalCase.js` (e.g., `Decision.js`)
+- ES Modules (`import`/`export`), NOT CommonJS (`require`)
+- Functional React components with hooks — NEVER class components
+- `async`/`await` — NEVER `.then()` chains
+- camelCase for variables/functions, PascalCase for components/models
+- 2-space indentation, single quotes, trailing commas
+- Every component file exports a **single default component**
+- Custom hooks always start with `use` (e.g., `useAI`, `useEditor`)
+- Zustand stores always end with `Store` (e.g., `aiStore.js`)
+
+## File Naming Conventions
+
+| Type | Pattern | Example |
+|---|---|---|
+| Components | `PascalCase.jsx` | `ChatPanel.jsx` |
+| Hooks | `use{Feature}.js` | `useAI.js` |
+| Stores | `{feature}Store.js` | `aiStore.js` |
+| Services (client) | `{feature}Service.js` | `aiService.js` |
+| CSS | `{feature}.css` | `chat.css` |
+| Routes | `{feature}.routes.js` | `ai.routes.js` |
+| Controllers | `{feature}.controller.js` | `ai.controller.js` |
+| Models | `PascalCase.js` | `Decision.js` |
 
 ## API Conventions
-- All API routes start with `/api/v1/`
-- RESTful naming: `GET /projects`, `POST /projects`, `GET /projects/:id`
-- Success response: `{ success: true, data: {...} }`
-- Error response: `{ success: false, error: { code, message, details } }`
-- All protected routes use auth middleware
-- Rate limiting on AI endpoints
+
+- All routes: `/api/v1/{resource}`
+- RESTful verbs: `GET /projects`, `POST /projects`, `GET /projects/:id`
+- **Success:** `{ success: true, data: { ... } }`
+- **Error:** `{ success: false, error: { code: "NOT_FOUND", message: "...", details: {} } }`
+- All protected routes use `authenticate` middleware
+- AI endpoints use `rateLimiter` middleware
 
 ## Error Handling
-- All async controller handlers wrapped in try-catch
-- Centralized error handler middleware at `server/src/middleware/errorHandler.middleware.js`
-- Frontend: every component that fetches data must handle loading, error, and empty states
+
+- All async controller handlers wrapped in `try-catch` with `next(error)`
+- Centralized error handler: `server/src/middleware/errorHandler.middleware.js`
+- **Frontend rule:** Every component that fetches data MUST handle: loading, error, and empty states
 - Never swallow errors silently — always log or display
 
 ## Commands
+
 ```bash
-npm run dev       # Start both client (5173) and server (3001)
-npm test          # Run all tests
-npm run lint      # Lint entire project
-npm run build     # Production build
+npm run dev       # Start both client (:5173) and server (:3001)
+npm test          # Run all tests (Vitest)
+npm run lint      # Lint entire project (ESLint)
+npm run build     # Production build (client)
 ```
 
+---
+
 ## Reference Documentation
-- Product Requirements: @docs/01_PRD.md
-- Technical Requirements: @docs/02_TRD.md
-- App Flow: @docs/03_App_Flow.md
-- UI/UX Design: @docs/04_UI_UX_Design_Brief.md
-- Backend Schema: @docs/05_Backend_Schema.md
-- Implementation Plan: @docs/06_Implementation_Plan.md
-- Feature Prompts: @docs/07_Feature_Master_Prompts.md
-- Multi-Agent Guide: @docs/08_Claude_Multi_Agent_Guide.md
+
+> Use `@path` syntax to load these into context when needed.
+
+- **Product Requirements:** @docs/01_PRD.md
+- **Technical Requirements:** @docs/02_TRD.md
+- **App Flow & Interactions:** @docs/03_App_Flow.md
+- **UI/UX Design System:** @docs/04_UI_UX_Design_Brief.md
+- **Database Schemas & API Contracts:** @docs/05_Backend_Schema.md
+- **Phase-by-Phase Build Plan:** @docs/06_Implementation_Plan.md
+- **AI Agent Prompts (1–18):** @docs/07_Feature_Master_Prompts.md
+- **Claude Multi-Agent Guide:** @docs/08_Claude_Multi_Agent_Guide.md
+
+---
+
+<instructions>
 
 ## Critical Rules
-1. NEVER put API keys in client-side code
-2. NEVER skip error handling — every async call needs try-catch
-3. ALWAYS validate request bodies on the server with Joi/Zod
-4. ALWAYS include loading and error states in UI components
-5. ALWAYS record accepted AI suggestions in Decision Memory
-6. NEVER delete or modify existing tests without explanation
-7. When creating a new feature, create BOTH frontend and backend in a single session
-8. Run `npm run lint` before considering any task complete
-9. Use semantic HTML elements and include aria-labels for accessibility
-10. Every interactive element needs a unique ID for testing
+
+> These rules are NON-NEGOTIABLE. Violating them is a blocking issue.
+
+1. **NEVER** put API keys, tokens, or secrets in client-side code (`client/src/`)
+2. **NEVER** skip error handling — every async call needs `try-catch`
+3. **ALWAYS** validate request bodies on the server with Joi/Zod schemas
+4. **ALWAYS** include loading, error, and empty states in UI components
+5. **ALWAYS** record accepted AI suggestions in Decision Memory
+6. **NEVER** delete or modify existing tests without documenting why
+7. **ALWAYS** create BOTH frontend and backend when building a new feature
+8. **ALWAYS** run `npm run lint` before considering any task complete
+9. **ALWAYS** use semantic HTML elements and include `aria-label` on interactive elements
+10. **ALWAYS** give every interactive element a unique `id` for testing
+
+</instructions>
