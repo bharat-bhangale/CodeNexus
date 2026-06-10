@@ -130,6 +130,50 @@ Contributions are welcome! Please read the documentation in `docs/` before makin
 
 ---
 
+## 🤖 Claude Code Integration
+
+This project includes a full Claude Code agent infrastructure in `.claude/` for AI-assisted development.
+
+### Setup
+```bash
+# Verify all agent files are in place
+node scripts/setup-claude-agents.js
+```
+
+### Available Slash Commands
+
+| Command | Purpose |
+|---|---|
+| `/build-component` | Create a React component with CSS, tests, and accessibility |
+| `/create-api-route` | Create an API endpoint with controller, service, validation, and test |
+| `/add-ai-feature` | Create a full AI feature pipeline (prompt → API → streaming → UI) |
+| `/create-zustand-store` | Create a Zustand state store with actions and tests |
+| `/add-mongoose-model` | Create a Mongoose model with schema, indexes, and seed data |
+| `/create-prompt-template` | Create an AI prompt template with token budget management |
+| `/build-visualization` | Create a React Flow graph visualization |
+| `/write-tests` | Generate comprehensive tests for any source file |
+| `/run-full-review` | Run a complete quality review (lint, tests, security) |
+| `/deploy-check` | Pre-deployment verification |
+
+### Available Sub-Agents
+
+| Agent | Scope | Specialty |
+|---|---|---|
+| `frontend-agent` | `client/` | React, Zustand, Monaco Editor, CSS |
+| `backend-agent` | `server/` | Express, Mongoose, JWT, Socket.IO |
+| `ai-integration-agent` | `server/src/prompts/` + `services/ai/` | Prompt engineering, AI streaming |
+| `visualization-agent` | `visualize/` components | React Flow, D3.js, dagre |
+| `testing-agent` | `*/tests/` | Vitest, Testing Library, Supertest |
+| `security-agent` | Entire codebase (read-only) | Vulnerability scanning |
+
+### Hooks (Automatic)
+
+- **PreToolUse:** Blocks destructive commands and protects `.env` files
+- **PostToolUse:** Auto-formats with Prettier and auto-lints with ESLint
+- **Notification:** Windows desktop alert when Claude needs input
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License.
