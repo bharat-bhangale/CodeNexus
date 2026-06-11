@@ -1,0 +1,80 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'cmd=$(cat /dev/stdin | jq -r \".tool_input.command // empty\"); if echo \"$cmd\" | grep -qiE \"rm -rf|drop database|format c|shutdown|del /s /q|rmdir /s\"; then echo \"BLOCKED: Destructive command detected — $cmd\" >&2; exit 2; fi'",
+            "statusMessage": "🛡️ Checking command safety..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'fp=$(cat /dev/stdin | jq -r \".tool_input.file_path // empty\"); if echo \"$fp\" | grep -qE \"\\.(env|env\\.local|env\\.production|env\\.staging)$\"; then echo \"BLOCKED: Cannot modify env files directly. Use .env.example instead.\" >&2; exit 2; fi'",
+            "statusMessage": "🔒 Validating file access..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'input=$(cat /dev/stdin); fp=$(echo \"$input\" | jq -r \".tool_input.file_path // empty\"); content=$(echo \"$input\" | jq -r \".tool_input.content // empty\"); if echo \"$fp\" | grep -q \"client/src\" && echo \"$content\" | grep -qE \"sk-[a-zA-Z0-9]{20,}|AIza[a-zA-Z0-9_-]{30,}|OPENAI_API_KEY\"; then echo \"BLOCKED: API keys must NOT be in client-side code. Use environment variables on the server.\" >&2; exit 2; fi'",
+            "statusMessage": "🔑 Checking for API key exposure..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'fp=$(cat /dev/stdin | jq -r \".tool_input.file_path // empty\"); ext=\"${fp##*.}\"; if [[ \"$ext\" =~ ^(js|jsx|ts|tsx|css|json|md)$ ]]; then npx prettier --write \"$fp\" 2>/dev/null || true; fi'",
+            "statusMessage": "✨ Auto-formatting with Prettier..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'fp=$(cat /dev/stdin | jq -r \".tool_input.file_path // empty\"); ext=\"${fp##*.}\"; if [[ \"$ext\" =~ ^(js|jsx)$ ]]; then npx eslint --fix --quiet \"$fp\" 2>/dev/null || true; fi'",
+            "statusMessage": "🔍 Running ESLint auto-fix..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'fp=$(cat /dev/stdin | jq -r \".tool_input.file_path // empty\"); if echo \"$fp\" | grep -qE \"server/src/models/.*\\.js$\"; then cd server && npx vitest run tests/unit/models/ --reporter=verbose 2>&1 | tail -5 || true; fi'",
+            "statusMessage": "🧪 Running model tests..."
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -Command \"Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Claude Code needs your attention — CodeNexus Dev', 'CodeNexus', 'OK', 'Information') | Out-Null\"",
+            "statusMessage": "📢 Sending desktop notification..."
+          }
+        ]
+      }
+    ]
+  }
+}
