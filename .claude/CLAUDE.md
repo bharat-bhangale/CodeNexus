@@ -28,8 +28,8 @@ learning from decisions.
 
 | Layer | Technologies |
 |---|---|
-| **Frontend** | React 18 + Vite 5 + Zustand 4 (state) + Monaco Editor |
-| **Backend** | Node.js 20 + Express 4 + MongoDB 7 (Mongoose 8) + Socket.IO 4 |
+| **Frontend** | Next.js 15 (App Router) + TypeScript + Zustand 4 (state) + Monaco Editor |
+| **Backend** | Node.js 20 + TypeScript + Express 4 + MongoDB 7 (Mongoose 8) + Socket.IO 4 |
 | **AI** | OpenAI GPT-4o via `openai` npm package (provider-agnostic abstraction) |
 | **Visualization** | React Flow 11 + D3.js 7 + dagre (layout engine) |
 | **Terminal** | @xterm/xterm 5 |
@@ -45,10 +45,10 @@ learning from decisions.
 
 ## Architecture
 
-- **Monorepo:** `client/` (React + Vite) + `server/` (Express) + `shared/` (constants, types)
+- **Monorepo:** `client/` (Next.js + TS) + `server/` (Express + TS) + `shared/` (constants, types)
 - **State management:** Zustand stores in `client/src/stores/` — one store per domain
 - **AI calls ALWAYS go through the backend** — NEVER expose API keys to the client
-- **AI provider abstraction:** All providers implement the same interface via `server/src/services/ai/AIService.js`
+- **AI provider abstraction:** All providers implement the same interface via `server/src/services/ai/AIService.ts`
 - **Prompt templates:** Template functions in `server/src/prompts/` (return `{ system, user }` objects)
 - **Database:** MongoDB with Mongoose ODM, models in `server/src/models/`
 - **Real-time:** Socket.IO for collaboration, SSE for AI response streaming
@@ -83,27 +83,27 @@ These decisions are intentional and battle-tested. Do not "fix" them:
 
 ## Coding Conventions
 
-- ES Modules (`import`/`export`), NOT CommonJS (`require`)
-- Functional React components with hooks — NEVER class components
+- TypeScript ES Modules (`import`/`export`)
+- Functional React components with hooks — NEVER class components. Use `"use client"` directive for interactive components in Next.js.
 - `async`/`await` — NEVER `.then()` chains
 - camelCase for variables/functions, PascalCase for components/models
 - 2-space indentation, single quotes, trailing commas
 - Every component file exports a **single default component**
 - Custom hooks always start with `use` (e.g., `useAI`, `useEditor`)
-- Zustand stores always end with `Store` (e.g., `aiStore.js`)
+- Zustand stores always end with `Store` (e.g., `aiStore.ts`)
 
 ## File Naming Conventions
 
 | Type | Pattern | Example |
 |---|---|---|
-| Components | `PascalCase.jsx` | `ChatPanel.jsx` |
-| Hooks | `use{Feature}.js` | `useAI.js` |
-| Stores | `{feature}Store.js` | `aiStore.js` |
-| Services (client) | `{feature}Service.js` | `aiService.js` |
+| Components | `PascalCase.tsx` | `ChatPanel.tsx` |
+| Hooks | `use{Feature}.ts` | `useAI.ts` |
+| Stores | `{feature}Store.ts` | `aiStore.ts` |
+| Services (client) | `{feature}Service.ts` | `aiService.ts` |
 | CSS | `{feature}.css` | `chat.css` |
-| Routes | `{feature}.routes.js` | `ai.routes.js` |
-| Controllers | `{feature}.controller.js` | `ai.controller.js` |
-| Models | `PascalCase.js` | `Decision.js` |
+| Routes | `{feature}.routes.ts` | `ai.routes.ts` |
+| Controllers | `{feature}.controller.ts` | `ai.controller.ts` |
+| Models | `PascalCase.ts` | `Decision.ts` |
 
 ## API Conventions
 
@@ -117,14 +117,14 @@ These decisions are intentional and battle-tested. Do not "fix" them:
 ## Error Handling
 
 - All async controller handlers wrapped in `try-catch` with `next(error)`
-- Centralized error handler: `server/src/middleware/errorHandler.middleware.js`
+- Centralized error handler: `server/src/middleware/errorHandler.middleware.ts`
 - **Frontend rule:** Every component that fetches data MUST handle: loading, error, and empty states
 - Never swallow errors silently — always log or display
 
 ## Commands
 
 ```bash
-npm run dev       # Start both client (:5173) and server (:3001)
+npm run dev       # Start both client (:3000) and server (:3001) using tsx
 npm test          # Run all tests (Vitest)
 npm run lint      # Lint entire project (ESLint)
 npm run build     # Production build (client)

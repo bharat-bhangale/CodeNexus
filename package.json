@@ -1,0 +1,37 @@
+{
+  "name": "codenexus",
+  "version": "0.1.0",
+  "description": "CodeNexus — The AI Code Editor That Thinks With You",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently -n client,server -c cyan,magenta \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspace=client",
+    "test": "concurrently \"npm run test --workspace=client\" \"npm run test --workspace=server\"",
+    "test:client": "npm run test --workspace=client",
+    "test:server": "npm run test --workspace=server",
+    "lint": "concurrently \"npm run lint --workspace=client\" \"npm run lint --workspace=server\"",
+    "lint:client": "npm run lint --workspace=client",
+    "lint:server": "npm run lint --workspace=server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bharat-bhangale/CodeNexus.git"
+  },
+  "author": "Bharat Bhangale",
+  "license": "MIT"
+}

@@ -22,7 +22,7 @@
 | **Frontend Agent** | "Act as the Frontend Agent defined in @.claude/agents/frontend-agent.md" | `client/` only |
 | **Backend Agent** | "Act as the Backend Agent defined in @.claude/agents/backend-agent.md" | `server/` only |
 | **AI Integration Agent** | "Act as the AI Integration Agent defined in @.claude/agents/ai-integration-agent.md" | `server/src/prompts/` + `server/src/services/ai/` |
-| **Visualization Agent** | "Act as the Visualization Agent defined in @.claude/agents/visualization-agent.md" | `client/src/components/visualize/` + `server/src/services/GraphGenerator.js` |
+| **Visualization Agent** | "Act as the Visualization Agent defined in @.claude/agents/visualization-agent.md" | `client/src/components/visualize/` + `server/src/services/GraphGenerator.ts` |
 | **Testing Agent** | "Act as the Testing Agent defined in @.claude/agents/testing-agent.md" | `*/tests/` directories |
 | **Security Agent** | "Act as the Security Agent defined in @.claude/agents/security-agent.md" | Entire codebase (read-only) |
 
@@ -65,16 +65,16 @@ Read @docs/06_Implementation_Plan.md Phase 1 for the task list.
 
 TASK: Initialize the CodeNexus monorepo. Do the following in exact order:
 
-1. Create root package.json with npm workspaces:
+1. Create root package.tson with npm workspaces:
    - workspaces: ["client", "server", "shared"]
    - scripts: dev (runs both), test (runs both), lint (runs both), build
 
-2. Create client/ using Vite + React template:
+2. Create client/ using Next.js template:
    - npx create-vite@latest client --template react
    - Install: zustand @monaco-editor/react reactflow @xyflow/react dagre
      lucide-react framer-motion @xterm/xterm @xterm/addon-fit axios socket.io-client
 
-3. Create server/ as Node.js project:
+3. Create server/ as Node.ts project:
    - npm init -y inside server/
    - Install: express mongoose dotenv jsonwebtoken bcryptjs cors
      helmet morgan express-rate-limit joi socket.io openai
@@ -82,8 +82,8 @@ TASK: Initialize the CodeNexus monorepo. Do the following in exact order:
    - Install dev: nodemon vitest supertest
 
 4. Create shared/ with:
-   - constants.js (API base URL, event names, feature flags)
-   - types.js (JSDoc type definitions for shared data shapes)
+   - constants.ts (API base URL, event names, feature flags)
+   - types.ts (JSDoc type definitions for shared data shapes)
 
 5. Create root .env.example documenting all required server env vars:
    PORT, MONGODB_URI, JWT_SECRET, JWT_EXPIRY, OPENAI_API_KEY,
@@ -91,7 +91,7 @@ TASK: Initialize the CodeNexus monorepo. Do the following in exact order:
 
 6. Create root-level configs:
    - .prettierrc (singleQuote: true, trailingComma: all, tabWidth: 2)
-   - .eslintrc.json (extends eslint:recommended, react/recommended)
+   - .eslintrc.tson (extends eslint:recommended, react/recommended)
    - .gitattributes (normalize line endings)
 
 7. Verify: run "npm run dev" from root. Both servers must start without errors.
@@ -104,12 +104,12 @@ OUTPUT: List every file created with its path and a one-line description.
 
 ### Integration Steps (Lead)
 1. Verify `npm run dev` starts both services
-2. Verify `http://localhost:5173` shows Vite React default page
+2. Verify `http://localhost:3000` shows Vite React default page
 3. Verify `http://localhost:3001/api/v1/health` returns `{ success: true }`
 
 ### ✅ Phase 1, Step 1 Checklist
-- [ ] Root `package.json` has workspaces
-- [ ] `client/` starts on port 5173
+- [ ] Root `package.tson` has workspaces
+- [ ] `client/` starts on port 3000
 - [ ] `server/` starts on port 3001
 - [ ] `/api/v1/health` endpoint responds
 - [ ] `.env.example` documents all required vars
@@ -128,7 +128,7 @@ Read @docs/04_UI_UX_Design_Brief.md for the design system.
 
 TASK: Create the complete folder structure and design system for CodeNexus.
 
-1. Create ALL directories in client/src/ (create placeholder index.js in each):
+1. Create ALL directories in client/src/ (create placeholder index.ts in each):
    components/{layout,editor,explorer,chat,intent,visualize,memory,health,review,terminal,common}
    hooks/, stores/, services/, utils/, themes/, styles/
 
@@ -183,29 +183,29 @@ Step 1 — Invoke /create-zustand-store for each store:
   - uiStore: { activePanel, sidebarWidth, bottomPanelHeight, isDragging, notifications }
   - aiStore: { isStreaming, activeFeature, lastResponse, error }
 
-Step 2 — Build AppLayout.jsx (client/src/components/layout/):
+Step 2 — Build AppLayout.tsx (client/src/components/layout/):
   - Three-column layout: Sidebar (240px) | Editor Area (flex) | Right Panel (320px, collapsible)
   - Top bar: 40px
   - Bottom bar: 24px
   - Bottom panel (terminal/output): 200px, collapsible
   - Use CSS Grid: "sidebar editor rightpanel" / "sidebar editor rightpanel" / "bottombar bottombar bottombar"
 
-Step 3 — Build Sidebar.jsx:
+Step 3 — Build Sidebar.tsx:
   - Icon rail (48px wide) with icons: Files, Search, Git, Extensions
   - Active icon opens corresponding panel below
   - Panel section (192px): file explorer or search results
   - Use lucide-react icons
 
-Step 4 — Build TopBar.jsx:
+Step 4 — Build TopBar.tsx:
   - Left: CodeNexus logo + project name
   - Center: Breadcrumb path of active file
   - Right: Intent Mode button, AI status indicator, Settings icon
 
-Step 5 — Build BottomBar.jsx:
+Step 5 — Build BottomBar.tsx:
   - Left: git branch name, line/column position
   - Right: language mode, encoding, spaces indicator, notifications count
 
-Step 6 — Update client/src/App.jsx to render AppLayout with placeholder panels.
+Step 6 — Update client/src/App.tsx to render AppLayout with placeholder panels.
 
 Use /build-component skill for each component.
 All layout measurements use CSS variables.
@@ -217,7 +217,7 @@ All layout measurements use CSS variables.
 
 ### ✅ Phase 1, Step 3 Checklist
 - [ ] 4 Zustand stores created with tests
-- [ ] App shell renders at `http://localhost:5173`
+- [ ] App shell renders at `http://localhost:3000`
 - [ ] Layout is 3-column with correct proportions
 - [ ] Sidebar, TopBar, BottomBar all visible
 
@@ -232,7 +232,7 @@ Act as the Frontend Agent defined in @.claude/agents/frontend-agent.md
 
 TASK: Integrate Monaco Editor as the core code editing surface.
 
-1. Build CodeEditor.jsx (client/src/components/editor/):
+1. Build CodeEditor.tsx (client/src/components/editor/):
    - Use @monaco-editor/react package
    - Props: filePath, language, value, onChange, theme
    - Configure: minimap (enabled), fontSize (from editorStore), wordWrap, tabSize: 2
@@ -240,14 +240,14 @@ TASK: Integrate Monaco Editor as the core code editing surface.
    - Keyboard shortcuts: Ctrl+S (save), Ctrl+/ (toggle comment), Ctrl+Shift+P (command palette)
    - On mount: register completion provider placeholder for AI completions
 
-2. Build EditorTabs.jsx:
+2. Build EditorTabs.tsx:
    - Tab per open file (from editorStore.openFiles)
    - Active tab highlighted with --accent-primary underline
    - Close button (×) on each tab
    - Unsaved indicator: dot before filename
    - Overflow: scroll horizontally
 
-3. Build DiffViewer.jsx:
+3. Build DiffViewer.tsx:
    - Uses Monaco's built-in diff editor (@monaco-editor/react DiffEditor)
    - Props: original, modified, language
    - Used by Intent Mode and Code Review panels
@@ -285,35 +285,35 @@ Read @docs/05_Backend_Schema.md for API conventions.
 
 TASK: Build the Express server foundation — all middleware, health check, and error handling.
 
-1. Create server/src/app.js:
-   - Express app with helmet, cors (CORS_ORIGIN env var), morgan (dev), express.json()
+1. Create server/src/app.ts:
+   - Express app with helmet, cors (CORS_ORIGIN env var), morgan (dev), express.tson()
    - Mount all route files at /api/v1/
    - Add 404 handler for unmatched routes
    - Add centralized error handler (last middleware)
    - Export app (do NOT call app.listen here)
 
-2. Create server/src/index.js:
+2. Create server/src/index.ts:
    - Import app, connect to MongoDB, then app.listen(PORT)
    - Log: "🚀 CodeNexus server running on port {PORT}"
    - Log: "📦 MongoDB connected to {DB_NAME}"
    - Graceful shutdown on SIGTERM/SIGINT
 
-3. Create server/src/middleware/errorHandler.middleware.js:
+3. Create server/src/middleware/errorHandler.middleware.ts:
    - Catch all errors passed via next(error)
    - Handle: ValidationError (400), CastError (400), JWT errors (401), duplicate key (409)
    - Log error in development, sanitize in production
    - Response format: { success: false, error: { code, message, details } }
 
-4. Create server/src/middleware/auth.middleware.js:
+4. Create server/src/middleware/auth.middleware.ts:
    - Verify JWT from httpOnly cookie OR Authorization Bearer header
    - Attach req.user = { id, email, role }
    - Return 401 if invalid/expired
 
-5. Create server/src/middleware/rateLimiter.middleware.js:
+5. Create server/src/middleware/rateLimiter.middleware.ts:
    - General limit: 100 req/15min per IP
    - AI endpoints limit: 20 req/min per user
 
-6. Create server/src/middleware/validation.middleware.js:
+6. Create server/src/middleware/validation.middleware.ts:
    - validate(schema) → middleware that validates req.body with Joi schema
    - Returns 400 with field-level errors on failure
 
@@ -345,11 +345,11 @@ Act as the Backend Agent defined in @.claude/agents/backend-agent.md
 
 TASK: Build the File System API for CodeNexus.
 
-1. Use /add-mongoose-model to create server/src/models/Project.js:
+1. Use /add-mongoose-model to create server/src/models/Project.ts:
    Fields: userId, name, description, language, framework, status (active/archived),
    settings: { tabSize, fontSize, theme }, createdAt, updatedAt
 
-2. Use /add-mongoose-model to create server/src/models/File.js:
+2. Use /add-mongoose-model to create server/src/models/File.ts:
    Fields: projectId, userId, path, name, extension, content, size, language,
    mimeType, isDirectory, parentPath, createdAt, updatedAt
    Index: compound (projectId + path) for fast lookups
@@ -373,19 +373,19 @@ Act as the Frontend Agent defined in @.claude/agents/frontend-agent.md
 
 TASK: Build the File Explorer panel and connect it to the fileStore.
 
-1. Use /build-component to create FileExplorer.jsx:
+1. Use /build-component to create FileExplorer.tsx:
    - Tree view of project files from fileStore.projectTree
    - Collapsible folders with chevron icon
    - File icons by extension (use lucide-react icons mapped to language)
    - Click file → opens in editor (calls editorStore.openFile)
-   - Right-click context menu (FileContextMenu.jsx): New File, New Folder, Rename, Delete
+   - Right-click context menu (FileContextMenu.tsx): New File, New Folder, Rename, Delete
 
-2. Use /build-component to create FileTreeNode.jsx:
+2. Use /build-component to create FileTreeNode.tsx:
    - Recursive component for each node
    - Indent by depth (12px per level)
    - Hover: background highlight with --bg-overlay
 
-3. Use /build-component to create FileContextMenu.jsx:
+3. Use /build-component to create FileContextMenu.tsx:
    - Floating menu positioned at click coordinates
    - Dismiss on outside click or Escape
 
@@ -405,7 +405,7 @@ Reference @docs/04_UI_UX_Design_Brief.md for component dimensions.
 ### Integration Steps (Lead)
 ```
 After both agents complete:
-1. Update client/src/services/fileService.js with all API calls
+1. Update client/src/services/fileService.ts with all API calls
 2. Wire fileStore.loadProject() to call fileService on app startup
 3. Verify: file tree loads, clicking opens file in Monaco editor
 4. Run /run-full-review
@@ -443,7 +443,7 @@ Read existing prompts in @server/src/prompts/ for style reference.
 
 TASK: Build the Intent Mode AI pipeline.
 
-1. Use /create-prompt-template to create server/src/prompts/intent.prompts.js:
+1. Use /create-prompt-template to create server/src/prompts/intent.prompts.ts:
    - Feature name: Intent Mode
    - AI specialty: "code transformation specialist who understands developer intent"
    - Context required: code, language, selectedLines, intentType, decisionHistory
@@ -460,7 +460,7 @@ TASK: Build the Intent Mode AI pipeline.
      Do NOT change behavior — only optimize for [intentType]. Preserve all tests."
    - Include token budget management (truncate large files to 150 lines max)
 
-2. Add streaming method to server/src/services/ai/AIService.js:
+2. Add streaming method to server/src/services/ai/AIService.ts:
    - Method: streamIntentAnalysis({ code, language, intentType, context, decisionHistory })
    - Must stream JSON chunks progressively
    - Emit partial tokens as they arrive, parse complete JSON at the end
@@ -474,7 +474,7 @@ TASK: Build the Intent Mode AI pipeline.
 ```
 Act as the Backend Agent defined in @.claude/agents/backend-agent.md
 
-Read @server/src/prompts/intent.prompts.js (just created).
+Read @server/src/prompts/intent.prompts.ts (just created).
 Read @docs/05_Backend_Schema.md for API conventions.
 
 TASK: Build the Intent Mode API endpoint.
@@ -485,7 +485,7 @@ TASK: Build the Intent Mode API endpoint.
    Auth: required
    Rate limiting: apply aiRateLimiter middleware
 
-2. In the controller (ai.controller.js, handleIntent function):
+2. In the controller (ai.controller.ts, handleIntent function):
    - Validate intentType is one of: performance, security, readability, scalability, test-coverage
    - Fetch last 10 Decision Memory entries from Decision model for this project
    - Build prompt using buildIntentPromptWithBudget()
@@ -494,8 +494,8 @@ TASK: Build the Intent Mode API endpoint.
    - On completion, write: data: [DONE]\n\n
    - Handle: timeout (60s max), rate limit, model errors
 
-3. Add the route to server/src/routes/ai.routes.js (create if doesn't exist)
-4. Register ai.routes.js in server/src/routes/index.js
+3. Add the route to server/src/routes/ai.routes.ts (create if doesn't exist)
+4. Register ai.routes.ts in server/src/routes/index.ts
 
 5. Write integration test: POST /api/v1/ai/intent returns 200 with SSE stream.
 ```
@@ -513,27 +513,27 @@ TASK: Build the Intent Mode UI and wire it to the backend.
    { intentType, isStreaming, result, error, showDiff, confidence }
    Actions: setIntentType, startAnalysis, setResult, setError, reset, toggleDiff
 
-2. Use /build-component to create IntentSelector.jsx:
+2. Use /build-component to create IntentSelector.tsx:
    - 5 intent type buttons in a horizontal row: Performance ⚡, Security 🔒,
      Readability 📖, Scalability 📈, Test Coverage 🧪
    - Active button: filled with --accent-primary, glow shadow
    - Inactive: outlined, subtle
 
-3. Use /build-component to create IntentPanel.jsx:
+3. Use /build-component to create IntentPanel.tsx:
    - Header: "Intent Mode" + close button
    - IntentSelector at the top
    - "Analyze with AI" button (disabled while streaming)
-   - ConfidenceBadge.jsx: circular progress showing 0-100% confidence score
+   - ConfidenceBadge.tsx: circular progress showing 0-100% confidence score
    - Streaming indicator: animated three-dot pulse while isStreaming
    - Result area: summary text + DiffViewer showing before/after
    - Action buttons: "Apply Changes" | "Try Different Intent" | "Dismiss"
 
-4. Use /build-component to create ConfidenceBadge.jsx:
+4. Use /build-component to create ConfidenceBadge.tsx:
    - SVG circle progress ring
    - Color: green (>80), yellow (50-80), red (<50)
    - Animates from 0 to final value over 0.8s
 
-5. Create client/src/hooks/useIntent.js:
+5. Create client/src/hooks/useIntent.ts:
    - Calls /api/v1/ai/intent via SSE fetch with ReadableStream
    - Parses streaming chunks into intentStore
    - On [DONE]: parse final JSON, update store with result and confidence
@@ -578,7 +578,7 @@ Act as the AI Integration Agent defined in @.claude/agents/ai-integration-agent.
 
 TASK: Build the Explain My Code AI pipeline.
 
-1. Use /create-prompt-template to create server/src/prompts/explain.prompts.js:
+1. Use /create-prompt-template to create server/src/prompts/explain.prompts.ts:
    - Feature name: Explain My Code
    - AI specialty: "code analysis expert who creates educational explanations"
    - Context required: code, language, filePath, context (surrounding files)
@@ -593,7 +593,7 @@ TASK: Build the Explain My Code AI pipeline.
        "suggestedReads": ["concept or pattern to learn more about"]
      }
 
-2. Create server/src/services/GraphGenerator.js:
+2. Create server/src/services/GraphGenerator.ts:
    - Method: generateDependencyGraph(sourceFiles[]) → { nodes[], edges[] }
    - Method: generateCallGraph(sourceCode, filePath) → { nodes[], edges[] }
    - Method: generateComponentTree(sourceCode) → { nodes[], edges[] }
@@ -640,14 +640,14 @@ For each:
 - dagre layout with TB direction (top to bottom)
 - Controls toolbar: Zoom In, Zoom Out, Fit View, Reset, Export PNG
 
-5. Build VisualizationPanel.jsx:
+5. Build VisualizationPanel.tsx:
    - Tab switcher: Dependency | Call Graph | Component Tree | Data Flow
    - Graph canvas takes remaining height
    - Node click → navigate to file in editor
    - Search box: highlight matching nodes
    - "Export PNG" button → html-to-image
 
-6. Build ExplainPanel.jsx (text explanation side):
+6. Build ExplainPanel.tsx (text explanation side):
    - AI streaming text explanation
    - Complexity badge (Simple/Moderate/Complex)
    - Key Components list (clickable → navigate to line)
@@ -677,7 +677,7 @@ Act as the AI Integration Agent defined in @.claude/agents/ai-integration-agent.
 
 TASK: Build the Smart Chat AI pipeline.
 
-1. Use /create-prompt-template to create server/src/prompts/chat.prompts.js:
+1. Use /create-prompt-template to create server/src/prompts/chat.prompts.ts:
    - Feature name: Smart Chat
    - AI specialty: "senior developer who answers questions about the current codebase"
    - Context required: message, chatHistory, activeFile, fileContent, selection, decisionHistory
@@ -722,24 +722,24 @@ Read @docs/04_UI_UX_Design_Brief.md for Chat panel specs.
 
 TASK: Build the Smart Chat UI.
 
-1. Use /build-component to create ChatPanel.jsx:
+1. Use /build-component to create ChatPanel.tsx:
    - Full-height scrollable message list
    - Auto-scroll to bottom on new message
    - Empty state: "Ask anything about your code — I know your project."
 
-2. Use /build-component to create ChatMessage.jsx:
+2. Use /build-component to create ChatMessage.tsx:
    - User messages: right-aligned, --accent-primary background
    - Assistant messages: left-aligned, --bg-surface, with code block syntax highlighting
    - Code blocks: Monaco-themed, copy button
    - Streaming indicator: blinking cursor appended while isStreaming
 
-3. Use /build-component to create ChatInput.jsx:
+3. Use /build-component to create ChatInput.tsx:
    - Multi-line textarea (Shift+Enter for newline, Enter to send)
    - Slash command autocomplete palette (shows suggestions as user types /)
    - "Include current file" toggle button (paperclip icon)
    - Send button: arrow icon, disabled while streaming
 
-4. Create client/src/hooks/useChat.js:
+4. Create client/src/hooks/useChat.ts:
    - Manages chat session, streaming, history
    - Parses slash commands and adds appropriate context
 ```
@@ -767,11 +767,11 @@ Act as the Testing Agent defined in @.claude/agents/testing-agent.md
 TASK: Write comprehensive tests for [FEATURE NAME].
 
 Files to test:
-- server/src/prompts/{feature}.prompts.js
-- server/src/controllers/ai.controller.js (new handler only)
-- client/src/hooks/use{Feature}.js
-- client/src/components/{feature}/{FeaturePanel}.jsx
-- client/src/stores/{feature}Store.js
+- server/src/prompts/{feature}.prompts.ts
+- server/src/controllers/ai.controller.ts (new handler only)
+- client/src/hooks/use{Feature}.ts
+- client/src/components/{feature}/{FeaturePanel}.tsx
+- client/src/stores/{feature}Store.ts
 
 For each file, use /write-tests.
 Ensure all tests pass: npx vitest run tests/ --reporter=verbose
@@ -794,22 +794,22 @@ Act as the AI Integration Agent defined in @.claude/agents/ai-integration-agent.
 
 TASK: Build the Decision Memory system and pattern detection.
 
-1. Use /add-mongoose-model to create server/src/models/Decision.js:
+1. Use /add-mongoose-model to create server/src/models/Decision.ts:
    Fields: projectId, userId, type (intent|review|chat|scaffold),
    context: { filePath, language, selection }, before (code), after (code),
    aiSuggestion (full AI response), summary (one-line), tags[], accepted: Boolean,
    timestamp, sessionId
 
-2. Use /create-prompt-template for server/src/prompts/pattern.prompts.js:
+2. Use /create-prompt-template for server/src/prompts/pattern.prompts.ts:
    - Feature: Pattern Detection
    - Input: decisions[] (array of past decisions)
    - Output: { patterns: [{ name, frequency, description, recommendation }] }
    - Detects recurring coding patterns (e.g., "always uses const over let")
 
 3. CRITICAL: Update ALL existing prompt files to include Decision Memory context:
-   - server/src/prompts/intent.prompts.js → add decisionHistory to user prompt
-   - server/src/prompts/explain.prompts.js → add decisionHistory
-   - server/src/prompts/chat.prompts.js → add decisionHistory
+   - server/src/prompts/intent.prompts.ts → add decisionHistory to user prompt
+   - server/src/prompts/explain.prompts.ts → add decisionHistory
+   - server/src/prompts/chat.prompts.ts → add decisionHistory
    This makes the AI smarter with every accepted suggestion.
 ```
 
@@ -835,19 +835,19 @@ Act as the Frontend Agent defined in @.claude/agents/frontend-agent.md
 
 TASK: Build the Decision Memory panel.
 
-1. Use /build-component to create DecisionTimeline.jsx:
+1. Use /build-component to create DecisionTimeline.tsx:
    - Vertical timeline of past decisions (newest first)
    - Group by date (Today, Yesterday, This Week, Older)
    - Filterable by type (intent/review/chat/scaffold)
    - Search box to find specific decisions
 
-2. Use /build-component to create DecisionCard.jsx:
+2. Use /build-component to create DecisionCard.tsx:
    - Shows: type badge, file path, one-line summary, timestamp
    - Expandable: shows before/after code diff (DiffViewer)
    - Tags: editable inline
    - Delete button with confirmation
 
-3. Use /build-component to create PatternDetector.jsx:
+3. Use /build-component to create PatternDetector.tsx:
    - "Detect Patterns" button → calls /api/v1/decisions/patterns
    - Displays detected patterns as cards with frequency and recommendation
 ```
@@ -870,7 +870,7 @@ TASK: Build the Decision Memory panel.
 
 **AI Integration Agent:**
 ```
-Use /create-prompt-template for server/src/prompts/review.prompts.js:
+Use /create-prompt-template for server/src/prompts/review.prompts.ts:
 - AI specialty: "senior code reviewer who finds bugs, security issues, and anti-patterns"
 - Input: code, language, filePath, decisionHistory
 - Output: { issues: [{ line, severity, type, title, description, suggestion, codeSnippet }],
@@ -890,12 +890,12 @@ Use /create-api-route for POST /api/v1/ai/review:
 
 **Frontend Agent:**
 ```
-Use /build-component to create ReviewPanel.jsx:
+Use /build-component to create ReviewPanel.tsx:
 - "Start Review" button triggers AI analysis
 - Progress indicator while streaming
-- ReviewAnnotation.jsx: Monaco editor gutter annotations (click to expand)
+- ReviewAnnotation.tsx: Monaco editor gutter annotations (click to expand)
 - Issue list: filterable by severity, color-coded
-- ReviewSummary.jsx: score gauge (0-100) + top positives + top issues
+- ReviewSummary.tsx: score gauge (0-100) + top positives + top issues
 - "Apply Fix" on fixable issues → calls Intent Mode with the suggestion
 ```
 
@@ -907,7 +907,7 @@ Use /build-component to create ReviewPanel.jsx:
 
 **Backend Agent:**
 ```
-Create server/src/services/HealthCalculator.js:
+Create server/src/services/HealthCalculator.ts:
 - Calculate: complexity score (cyclomatic), duplication %, doc coverage %, test coverage %
 - Use @babel/parser for AST-based analysis
 - Store results in HealthSnapshot model (/add-mongoose-model)
@@ -917,12 +917,12 @@ Create server/src/services/HealthCalculator.js:
 
 **Visualization Agent:**
 ```
-Build HealthDashboard.jsx with D3.js charts:
+Build HealthDashboard.tsx with D3.ts charts:
 - Overall score gauge (0-100, color: red < 50, yellow 50-75, green > 75)
 - 4 metric cards: Complexity, Duplication, Documentation, Test Coverage
 - Trend chart: sparkline of score over last 30 days
 - Hotspot list: top 5 files with worst metrics (clickable → open in editor)
-- HealthScoreCard.jsx: animated counter from 0 to score value
+- HealthScoreCard.tsx: animated counter from 0 to score value
 ```
 
 ---
@@ -942,7 +942,7 @@ Act as the Backend Agent defined in @.claude/agents/backend-agent.md
 
 TASK: Build complete authentication system.
 
-1. Use /add-mongoose-model for User.js:
+1. Use /add-mongoose-model for User.ts:
    Fields: email (unique, indexed), password (select: false),
    name, avatar, plan (free/pro), projectIds[], preferences:{},
    createdAt, lastLoginAt
@@ -965,23 +965,23 @@ Act as the Frontend Agent defined in @.claude/agents/frontend-agent.md
 
 TASK: Build auth pages and project dashboard.
 
-1. Use /build-component for LoginPage.jsx:
+1. Use /build-component for LoginPage.tsx:
    - Email + password form with validation
    - "Sign up" link to RegisterPage
    - Error state for invalid credentials
    - Auto-redirect to dashboard on success
 
-2. Use /build-component for RegisterPage.jsx:
+2. Use /build-component for RegisterPage.tsx:
    - Name, email, password, confirm password
    - Password strength indicator
    - Terms of service checkbox
 
-3. Use /build-component for DashboardPage.jsx:
-   - Grid of ProjectCard.jsx components
+3. Use /build-component for DashboardPage.tsx:
+   - Grid of ProjectCard.tsx components
    - "New Project" button → creates project and navigates to editor
    - ProjectCard: name, language icon, last modified, file count
 
-4. Update App.jsx routing: public routes (login/register) vs protected routes (dashboard/editor)
+4. Update App.tsx routing: public routes (login/register) vs protected routes (dashboard/editor)
 ```
 
 ### Security Agent Prompt (after auth is built)
@@ -992,9 +992,9 @@ Act as the Security Agent defined in @.claude/agents/security-agent.md
 TASK: Security audit of the authentication implementation.
 
 Review these files specifically:
-- server/src/controllers/auth.controller.js
-- server/src/middleware/auth.middleware.js
-- server/src/models/User.js
+- server/src/controllers/auth.controller.ts
+- server/src/middleware/auth.middleware.ts
+- server/src/models/User.ts
 - Any file that handles passwords or JWTs
 
 Check for:
@@ -1021,9 +1021,9 @@ Generate full CRITICAL/WARNING/INFO report.
 
 **Frontend Agent:**
 ```
-Build TerminalPanel.jsx using @xterm/xterm and @xterm/addon-fit:
-- Full xterm.js terminal
-- Multiple tabs (TerminalTabs.jsx): "Terminal 1", "Terminal 2" + button to open new
+Build TerminalPanel.tsx using @xterm/xterm and @xterm/addon-fit:
+- Full xterm.ts terminal
+- Multiple tabs (TerminalTabs.tsx): "Terminal 1", "Terminal 2" + button to open new
 - Shell: connect to server WebSocket for command execution
 - Resize: fit-addon auto-resizes on panel resize
 - Theme: match CodeNexus dark colors via Terminal.options
@@ -1031,7 +1031,7 @@ Build TerminalPanel.jsx using @xterm/xterm and @xterm/addon-fit:
 
 **Backend Agent:**
 ```
-Build server/src/sockets/terminal.socket.js:
+Build server/src/sockets/terminal.socket.ts:
 - On connection: spawn shell process (PowerShell on Windows, bash on Linux)
 - Pipe stdin/stdout/stderr through Socket.IO
 - Clean up process on disconnect
@@ -1044,11 +1044,11 @@ Build server/src/sockets/terminal.socket.js:
 
 **AI Integration Agent:**
 ```
-Use /create-prompt-template for server/src/prompts/scaffold.prompts.js:
+Use /create-prompt-template for server/src/prompts/scaffold.prompts.ts:
 - Input: description (natural language), targetDirectory, projectType
 - Output: { files: [{ path, content, description }], explanation }
 - Example: "Create a React hook for fetching paginated data" →
-  generates usePagedFetch.js + usePagedFetch.test.js
+  generates usePagedFetch.ts + usePagedFetch.test.ts
 ```
 
 **Backend Agent:**
@@ -1065,7 +1065,7 @@ Use /create-api-route for POST /api/v1/ai/scaffold:
 
 **Frontend Agent (standalone — no backend needed):**
 ```
-Build RegexPlayground.jsx:
+Build RegexPlayground.tsx:
 - Regex input field with flags checkboxes (g, i, m, s)
 - Test string textarea (multi-line)
 - Live match highlighting (re-run on every keystroke, debounce 200ms)
