@@ -1,0 +1,164 @@
+'use client';
+
+import { useCallback, useRef } from 'react';
+import Editor, { OnMount, OnChange } from '@monaco-editor/react';
+import type { editor } from 'monaco-editor';
+import { useEditorStore } from '@/stores/editorStore';
+import { codenexusDarkTheme } from '@/themes/monacoThemes';
+
+export default function CodeEditor() {
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const activeFile = useEditorStore((s) => {
+    const id = s.activeFileId;
+    return s.openFiles.find((f) => f.id === id);
+  });
+  const updateFileContent = useEditorStore((s) => s.updateFileContent);
+  const setCursorPosition = useEditorStore((s) => s.setCursorPosition);
+  const setSelection = useEditorStore((s) => s.setSelection);
+
+  const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
+    editorRef.current = editor;
+
+    // Register the CodeNexus dark theme
+    monaco.editor.defineTheme('codenexus-dark', codenexusDarkTheme);
+    monaco.editor.setTheme('codenexus-dark');
+
+    // Track cursor position
+    editor.onDidChangeCursorPosition((e) => {
+      setCursorPosition({
+        lineNumber: e.position.lineNumber,
+        column: e.position.column,
+      });
+    });
+
+    // Track selection
+    editor.onDidChangeCursorSelection((e) => {
+      const sel = e.selection;
+      if (
+        sel.startLineNumber === sel.endLineNumber &&
+        sel.startColumn === sel.endColumn
+      ) {
+        setSelection(null);
+      } else {
+        setSelection({
+          startLineNumber: sel.startLineNumber,
+          startColumn: sel.startColumn,
+          endLineNumber: sel.endLineNumber,
+          endColumn: sel.endColumn,
+        });
+      }
+    });
+
+    // Keyboard shortcuts
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      // Save (mark clean) — will integrate with backend later
+      const fileId = useEditorStore.getState().activeFileId;
+      if (fileId) {
+        useEditorStore.getState().markFileSaved(fileId);
+      }
+    });
+
+    editor.focus();
+  }, [setCursorPosition, setSelection]);
+
+  const handleChange: OnChange = useCallback(
+    (value) => {
+      if (activeFile && value !== undefined) {
+        updateFileContent(activeFile.id, value);
+      }
+    },
+    [activeFile, updateFileContent]
+  );
+
+  if (!activeFile) {
+    return (
+      <div className="code-editor-empty">
+        <div className="code-editor-empty-inner">
+          <div className="code-editor-logo">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect width="48" height="48" rx="12" fill="var(--accent-primary)" opacity="0.15" />
+              <path d="M16 20L24 28L32 20" stroke="var(--accent-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M16 16L24 24L32 16" stroke="var(--accent-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4" />
+            </svg>
+          </div>
+          <h2 className="code-editor-empty-title">CodeNexus</h2>
+          <p className="code-editor-empty-subtitle">Open a file to start editing</p>
+          <div className="code-editor-shortcuts">
+            <div className="shortcut-row">
+              <kbd>Ctrl+P</kbd>
+              <span>Quick Open</span>
+            </div>
+            <div className="shortcut-row">
+              <kbd>Ctrl+B</kbd>
+              <span>Toggle Sidebar</span>
+            </div>
+            <div className="shortcut-row">
+              <kbd>Ctrl+`</kbd>
+              <span>Toggle Terminal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="code-editor-wrapper">
+      <Editor
+        height="100%"
+        language={activeFile.language}
+        value={activeFile.content}
+        theme="codenexus-dark"
+        onChange={handleChange}
+        onMount={handleEditorDidMount}
+        options={{
+          fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+          fontSize: 14,
+          lineHeight: 22,
+          fontLigatures: true,
+          lineNumbers: 'on',
+          minimap: { enabled: true, maxColumn: 80, renderCharacters: false },
+          scrollbar: {
+            verticalScrollbarSize: 10,
+            horizontalScrollbarSize: 10,
+            useShadows: false,
+          },
+          smoothScrolling: true,
+          cursorBlinking: 'smooth',
+          cursorSmoothCaretAnimation: 'on',
+          wordWrap: 'on',
+          bracketPairColorization: { enabled: true },
+          guides: {
+            bracketPairs: true,
+            indentation: true,
+          },
+          padding: { top: 12, bottom: 12 },
+          renderLineHighlight: 'all',
+          renderWhitespace: 'selection',
+          tabSize: 2,
+          suggest: {
+            preview: true,
+            showMethods: true,
+            showFunctions: true,
+            showConstructors: true,
+          },
+          parameterHints: { enabled: true },
+          quickSuggestions: true,
+          folding: true,
+          foldingHighlight: true,
+          showFoldingControls: 'mouseover',
+          formatOnPaste: true,
+          autoClosingBrackets: 'always',
+          autoClosingQuotes: 'always',
+          autoIndent: 'full',
+        }}
+        loading={
+          <div className="code-editor-loading">
+            <div className="code-editor-spinner" />
+            <span>Loading editor...</span>
+          </div>
+        }
+      />
+    </div>
+  );
+}
