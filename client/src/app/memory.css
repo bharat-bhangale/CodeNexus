@@ -1,0 +1,785 @@
+/* ═══════════════════════════════════════════════════════════════
+   CodeNexus — Decision Memory Panel Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Panel Layout ─── */
+.mem-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mem-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.mem-panel-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.mem-panel-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mem-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Sub-tabs ─── */
+.mem-subtabs {
+  display: flex;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.mem-subtab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex: 1;
+  justify-content: center;
+}
+
+.mem-subtab:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.mem-subtab-active {
+  background: var(--accent-primary-alpha);
+  color: var(--accent-primary-hover);
+}
+
+.mem-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ─── Search ─── */
+.mem-search {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.mem-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-2);
+}
+
+.mem-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.mem-search-input {
+  flex: 1;
+  padding: 5px var(--space-1);
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  outline: none;
+  min-width: 0;
+}
+
+.mem-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.mem-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mem-search-clear:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mem-filter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mem-filter-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mem-filter-toggle-active {
+  background: var(--accent-primary-alpha);
+  color: var(--accent-primary);
+}
+
+.mem-filters {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.mem-filter-select,
+.mem-filter-input {
+  flex: 1;
+  padding: 4px var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+.mem-filter-select:focus,
+.mem-filter-input:focus {
+  border-color: var(--accent-primary);
+}
+
+/* ─── Timeline ─── */
+.mem-timeline {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mem-timeline-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-1);
+}
+
+.mem-timeline-group {
+  margin-bottom: var(--space-2);
+}
+
+.mem-timeline-date {
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--space-1) var(--space-2);
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  z-index: 1;
+}
+
+/* ─── Decision Card ─── */
+.mem-card {
+  margin: 2px var(--space-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.mem-card:hover {
+  border-color: var(--border-default);
+}
+
+.mem-card-expanded {
+  border-color: var(--accent-primary-alpha);
+}
+
+.mem-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.mem-card-header:hover {
+  background: var(--bg-hover);
+}
+
+.mem-card-expand {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.mem-card-type-icon {
+  flex-shrink: 0;
+}
+
+.mem-card-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mem-card-title {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mem-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+
+.mem-card-file,
+.mem-card-time {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.mem-card-badges {
+  flex-shrink: 0;
+}
+
+.mem-card-type-badge {
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.mem-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 0 var(--space-2) var(--space-1);
+}
+
+.mem-tag {
+  padding: 1px 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.mem-tag-sm {
+  padding: 0 4px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+/* ─── Card Body (expanded) ─── */
+.mem-card-body {
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+  animation: fadeIn 0.15s ease;
+}
+
+.mem-card-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: 0 0 var(--space-2);
+}
+
+.mem-card-code-section {
+  margin-bottom: var(--space-2);
+}
+
+.mem-card-code-label {
+  display: block;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.mem-card-code {
+  padding: var(--space-2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 120px;
+  margin: 0;
+}
+
+.mem-card-ai {
+  padding: var(--space-2);
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+
+.mem-card-ai-label {
+  display: block;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--accent-primary);
+  margin-bottom: 4px;
+}
+
+.mem-card-ai-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: 0 0 var(--space-1);
+}
+
+.mem-card-confidence {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 6px;
+}
+
+.mem-card-confidence-bar {
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.mem-card-confidence-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.mem-card-note {
+  padding: var(--space-2);
+  background: var(--bg-surface);
+  border-left: 2px solid var(--accent-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: var(--space-2);
+}
+
+.mem-card-note-label {
+  display: block;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.mem-card-note p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.mem-card-rating {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--space-2);
+}
+
+.mem-star-filled {
+  color: #f59e0b;
+  fill: #f59e0b;
+}
+
+.mem-star-empty {
+  color: var(--text-muted);
+}
+
+.mem-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.mem-card-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mem-card-action-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mem-card-action-danger:hover {
+  color: var(--color-error);
+}
+
+/* ─── Patterns Panel ─── */
+.mem-patterns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-2);
+}
+
+.mem-patterns-section,
+.mem-rules-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.mem-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-2);
+}
+
+.mem-refresh-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mem-refresh-btn:hover {
+  background: var(--bg-hover);
+  color: var(--accent-primary);
+}
+
+.mem-patterns-list,
+.mem-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.mem-pattern-card {
+  padding: var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast);
+}
+
+.mem-pattern-card:hover {
+  border-color: var(--border-default);
+}
+
+.mem-pattern-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.mem-pattern-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.mem-pattern-confidence {
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.mem-pattern-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 4px;
+}
+
+.mem-pattern-count {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.mem-pattern-tags {
+  display: flex;
+  gap: 3px;
+}
+
+.mem-create-rule-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--space-2);
+  padding: 3px var(--space-2);
+  background: var(--accent-primary-alpha);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--accent-primary-hover);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mem-create-rule-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* ─── Rules ─── */
+.mem-rule-card {
+  padding: var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+}
+
+.mem-rule-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.mem-rule-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.mem-rule-category {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 1px 6px;
+  background: var(--bg-hover);
+  border-radius: 10px;
+}
+
+.mem-rule-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mem-rule-delete:hover {
+  background: var(--bg-hover);
+  color: var(--color-error);
+}
+
+/* ─── Record Form ─── */
+.mem-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.mem-form-header {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.mem-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mem-form-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+}
+
+.mem-form-input,
+.mem-form-textarea {
+  padding: var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.mem-form-input:focus,
+.mem-form-textarea:focus {
+  border-color: var(--accent-primary);
+}
+
+.mem-form-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.mem-form-context {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+}
+
+.mem-form-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--accent-primary);
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mem-form-submit:hover:not(:disabled) {
+  background: var(--accent-primary-hover);
+  box-shadow: 0 0 12px var(--accent-primary-alpha);
+}
+
+.mem-form-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Empty / Loading ─── */
+.mem-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.mem-empty-hint {
+  font-size: 11px;
+  margin-top: var(--space-1);
+  opacity: 0.7;
+}
+
+.mem-empty-sm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mem-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.mem-spinner {
+  animation: spin 1s linear infinite;
+}
+
+.mem-load-more {
+  display: block;
+  width: 100%;
+  padding: var(--space-2);
+  text-align: center;
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.mem-load-more:hover {
+  background: var(--accent-primary-alpha);
+}

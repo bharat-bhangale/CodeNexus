@@ -53,6 +53,11 @@ export default function AppLayout() {
         e.preventDefault();
         setActiveRightPanel('visualize');
       }
+      // Ctrl+Shift+M: Open Decision Memory panel
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
+        e.preventDefault();
+        setActiveRightPanel('memory');
+      }
     },
     [toggleSidebar, toggleBottomPanel, toggleRightPanel, setActiveRightPanel]
   );
