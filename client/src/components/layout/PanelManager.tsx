@@ -2,6 +2,7 @@
 
 import { useUIStore, type RightPanelView } from '@/stores/uiStore';
 import VisualizationPanel from '@/components/visualize/VisualizationPanel';
+import DecisionMemoryPanel from '@/components/memory/DecisionMemoryPanel';
 import {
   MessageSquare,
   Zap,
@@ -58,13 +59,7 @@ export default function PanelManager() {
           />
         )}
         {activePanel === 'visualize' && <VisualizationPanel />}
-        {activePanel === 'memory' && (
-          <PanelPlaceholder
-            icon={<Brain size={32} />}
-            title="Decision Memory"
-            description="Your architectural decisions and coding preferences."
-          />
-        )}
+        {activePanel === 'memory' && <DecisionMemoryPanel />}
         {activePanel === 'health' && (
           <PanelPlaceholder
             icon={<Activity size={32} />}
