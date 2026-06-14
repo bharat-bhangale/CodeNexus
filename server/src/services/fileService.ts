@@ -1,7 +1,6 @@
 import { FileModel, IFile } from '../models/File.js';
 import { logger } from '../utils/logger.js';
 
-// ─── Extension → Language Map ───
 const extensionToLanguage: Record<string, string> = {
   '.js': 'javascript',
   '.jsx': 'javascript',
@@ -27,30 +26,78 @@ const extensionToLanguage: Record<string, string> = {
   '.gitignore': 'plaintext',
 };
 
+function createServiceError(message: string, statusCode: number, code: string): Error {
+  return Object.assign(new Error(message), { statusCode, code });
+}
+
 function detectLanguage(filename: string): string {
-  const ext = filename.slice(filename.lastIndexOf('.'));
+  const lower = filename.toLowerCase();
+  if (lower === 'dockerfile') return 'dockerfile';
+  if (lower === 'makefile') return 'makefile';
+
+  const dotIndex = filename.lastIndexOf('.');
+  if (dotIndex === -1) return 'plaintext';
+
+  const ext = filename.slice(dotIndex).toLowerCase();
   return extensionToLanguage[ext] || 'plaintext';
 }
 
+function normalizeFilePath(filePath: string): string {
+  const normalized = `/${filePath}`
+    .replace(/\\/g, '/')
+    .replace(/\/+/g, '/')
+    .replace(/\/$/, '');
+
+  return normalized === '' ? '/' : normalized;
+}
+
 function computeParentPath(filePath: string): string {
-  const parts = filePath.split('/');
+  const normalizedPath = normalizeFilePath(filePath);
+  const parts = normalizedPath.split('/');
   parts.pop();
   return parts.length <= 1 ? '/' : parts.join('/');
 }
 
-// ─── Service Methods ───
+function validateFileName(name: string): string {
+  const trimmed = name.trim();
+
+  if (!trimmed) {
+    throw createServiceError('File name is required', 400, 'VALIDATION_ERROR');
+  }
+
+  if (trimmed.includes('/') || trimmed.includes('\\')) {
+    throw createServiceError(
+      'File name cannot include path separators',
+      400,
+      'VALIDATION_ERROR'
+    );
+  }
+
+  if (trimmed === '.' || trimmed === '..') {
+    throw createServiceError('File name cannot be "." or ".."', 400, 'VALIDATION_ERROR');
+  }
+
+  return trimmed;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildChildPath(parentPath: string, name: string): string {
+  const normalizedParentPath = normalizeFilePath(parentPath);
+  return normalizedParentPath === '/' ? `/${name}` : `${normalizedParentPath}/${name}`;
+}
 
 export async function getFileTree(projectId: string): Promise<any[]> {
   const files = await FileModel.find({ projectId })
     .select('name path type language parentPath')
-    .sort({ type: -1, name: 1 }) // folders first, then alphabetical
+    .sort({ type: -1, name: 1 })
     .lean();
 
-  // Build nested tree
   const nodeMap = new Map<string, any>();
   const roots: any[] = [];
 
-  // Create node entries
   for (const file of files) {
     nodeMap.set(file.path, {
       id: (file as any)._id.toString(),
@@ -62,29 +109,29 @@ export async function getFileTree(projectId: string): Promise<any[]> {
     });
   }
 
-  // Link children to parents
   for (const file of files) {
     const node = nodeMap.get(file.path)!;
     const parent = nodeMap.get(file.parentPath);
-    if (parent && parent.children) {
+
+    if (parent?.children) {
       parent.children.push(node);
     } else {
       roots.push(node);
     }
   }
 
-  // Sort children: folders first, then alphabetical
   function sortChildren(nodes: any[]) {
     nodes.sort((a: any, b: any) => {
       if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
+
     for (const node of nodes) {
       if (node.children) sortChildren(node.children);
     }
   }
-  sortChildren(roots);
 
+  sortChildren(roots);
   return roots;
 }
 
@@ -93,7 +140,7 @@ export async function getFileById(fileId: string): Promise<IFile | null> {
 }
 
 export async function getFileByPath(projectId: string, filePath: string): Promise<IFile | null> {
-  return FileModel.findOne({ projectId, path: filePath });
+  return FileModel.findOne({ projectId, path: normalizeFilePath(filePath) });
 }
 
 export async function createFile(data: {
@@ -103,57 +150,100 @@ export async function createFile(data: {
   type: 'file' | 'folder';
   content?: string;
 }): Promise<IFile> {
-  const language = data.type === 'file' ? detectLanguage(data.name) : 'plaintext';
-  const parentPath = computeParentPath(data.path);
+  const name = validateFileName(data.name);
+  const path = normalizeFilePath(data.path || buildChildPath('/', name));
+  const parentPath = computeParentPath(path);
+  const expectedPath = buildChildPath(parentPath, name);
+
+  if (path !== expectedPath) {
+    throw createServiceError(
+      'File path must match parent path and name',
+      400,
+      'VALIDATION_ERROR'
+    );
+  }
+
+  if (parentPath !== '/') {
+    const parent = await FileModel.findOne({
+      projectId: data.projectId,
+      path: parentPath,
+      type: 'folder',
+    });
+
+    if (!parent) {
+      throw createServiceError(
+        `Parent folder not found: ${parentPath}`,
+        404,
+        'PARENT_FOLDER_NOT_FOUND'
+      );
+    }
+  }
+
+  const existing = await FileModel.exists({ projectId: data.projectId, path });
+  if (existing) {
+    throw createServiceError(`A file already exists at ${path}`, 409, 'DUPLICATE_FILE_PATH');
+  }
 
   const file = new FileModel({
     projectId: data.projectId,
-    name: data.name,
-    path: data.path,
+    name,
+    path,
     type: data.type,
-    content: data.content || '',
-    language,
+    content: data.type === 'file' ? data.content || '' : '',
+    language: data.type === 'file' ? detectLanguage(name) : 'plaintext',
     parentPath,
   });
 
   return file.save();
 }
 
-export async function updateFileContent(
-  fileId: string,
-  content: string
-): Promise<IFile | null> {
+export async function updateFileContent(fileId: string, content: string): Promise<IFile | null> {
   const file = await FileModel.findById(fileId);
   if (!file) return null;
+
+  if (file.type === 'folder') {
+    throw createServiceError('Folder content cannot be updated', 400, 'INVALID_FILE_OPERATION');
+  }
 
   file.content = content;
   file.version += 1;
   return file.save();
 }
 
-export async function renameFile(
-  fileId: string,
-  newName: string
-): Promise<IFile | null> {
+export async function renameFile(fileId: string, newName: string): Promise<IFile | null> {
   const file = await FileModel.findById(fileId);
   if (!file) return null;
 
+  const name = validateFileName(newName);
   const oldPath = file.path;
   const parentPath = computeParentPath(oldPath);
-  const newPath = parentPath === '/' ? `/${newName}` : `${parentPath}/${newName}`;
+  const newPath = buildChildPath(parentPath, name);
 
-  file.name = newName;
-  file.path = newPath;
-  if (file.type === 'file') {
-    file.language = detectLanguage(newName);
+  if (newPath === oldPath) return file;
+
+  const duplicate = await FileModel.exists({
+    projectId: file.projectId,
+    path: newPath,
+    _id: { $ne: file._id },
+  });
+
+  if (duplicate) {
+    throw createServiceError(`A file already exists at ${newPath}`, 409, 'DUPLICATE_FILE_PATH');
   }
 
-  // If folder, update children paths
+  file.name = name;
+  file.path = newPath;
+
+  if (file.type === 'file') {
+    file.language = detectLanguage(name);
+  }
+
   if (file.type === 'folder') {
     const children = await FileModel.find({
       projectId: file.projectId,
-      path: { $regex: `^${oldPath}/` },
+      path: { $regex: new RegExp(`^${escapeRegExp(oldPath)}/`) },
     });
+
     for (const child of children) {
       child.path = child.path.replace(oldPath, newPath);
       child.parentPath = child.parentPath.replace(oldPath, newPath);
@@ -169,18 +259,15 @@ export async function deleteFile(fileId: string): Promise<boolean> {
   if (!file) return false;
 
   if (file.type === 'folder') {
-    // Delete all children
     await FileModel.deleteMany({
       projectId: file.projectId,
-      path: { $regex: `^${file.path}/` },
+      path: { $regex: new RegExp(`^${escapeRegExp(file.path)}/`) },
     });
   }
 
   await FileModel.findByIdAndDelete(fileId);
   return true;
 }
-
-// ─── Seed Sample Project ───
 
 export async function seedSampleProject(projectId: string = 'default'): Promise<void> {
   const existing = await FileModel.countDocuments({ projectId });
@@ -192,32 +279,34 @@ export async function seedSampleProject(projectId: string = 'default'): Promise<
   logger.info(`Seeding sample project "${projectId}"...`);
 
   const sampleFiles = [
-    // Root folder: src
     {
       projectId,
-      name: 'src',
-      path: '/src',
+      name: 'components',
+      path: '/components',
       type: 'folder' as const,
       content: '',
       parentPath: '/',
     },
-    // src/App.tsx
     {
       projectId,
-      name: 'App.tsx',
-      path: '/src/App.tsx',
+      name: 'utils',
+      path: '/utils',
+      type: 'folder' as const,
+      content: '',
+      parentPath: '/',
+    },
+    {
+      projectId,
+      name: 'App.jsx',
+      path: '/App.jsx',
       type: 'file' as const,
-      parentPath: '/src',
+      parentPath: '/',
       content: `import React from 'react';
-import Header from './components/Header';
-import { formatDate, capitalize } from './utils/helpers';
+import Header from './components/Header.jsx';
+import { formatDate, capitalize } from './utils/helpers.js';
 import './styles.css';
 
-interface AppProps {
-  title?: string;
-}
-
-const App: React.FC<AppProps> = ({ title = 'CodeNexus' }) => {
+export default function App({ title = 'CodeNexus' }) {
   const today = formatDate(new Date());
 
   return (
@@ -226,24 +315,22 @@ const App: React.FC<AppProps> = ({ title = 'CodeNexus' }) => {
       <main className="app-main">
         <h2>Welcome to {title}</h2>
         <p>Today is {today}</p>
-        <p>Start editing to see changes in real-time!</p>
+        <p>Open a file from the explorer and start editing.</p>
       </main>
     </div>
   );
-};
-
-export default App;
+}
 `,
     },
-    // src/index.ts
     {
       projectId,
-      name: 'index.ts',
-      path: '/src/index.ts',
+      name: 'index.js',
+      path: '/index.js',
       type: 'file' as const,
-      parentPath: '/src',
-      content: `// CodeNexus — Entry Point
-import App from './App';
+      parentPath: '/',
+      content: `import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.jsx';
 
 const rootElement = document.getElementById('root');
 
@@ -251,36 +338,29 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-console.log('🚀 CodeNexus is starting...');
-
-// Initialize the application
-const app = new App({ title: 'CodeNexus Editor' });
-app.render(rootElement);
-
-export default app;
+createRoot(rootElement).render(
+  <React.StrictMode>
+    <App title="CodeNexus Editor" />
+  </React.StrictMode>
+);
 `,
     },
-    // src/styles.css
     {
       projectId,
       name: 'styles.css',
-      path: '/src/styles.css',
+      path: '/styles.css',
       type: 'file' as const,
-      parentPath: '/src',
-      content: `/* CodeNexus — Application Styles */
-
-:root {
-  --primary: #6366f1;
-  --bg: #0a0a0f;
-  --text: #e4e4e7;
-  --surface: #1a1a2e;
+      parentPath: '/',
+      content: `:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, sans-serif;
+  background: #0a0a0f;
+  color: #e4e4e7;
 }
 
 .app {
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
+  background: #0a0a0f;
 }
 
 .app-main {
@@ -290,7 +370,7 @@ export default app;
 }
 
 .app-main h2 {
-  color: var(--primary);
+  color: #6366f1;
   margin-bottom: 1rem;
 }
 
@@ -300,27 +380,13 @@ export default app;
 }
 `,
     },
-    // src/utils folder
     {
       projectId,
-      name: 'utils',
-      path: '/src/utils',
-      type: 'folder' as const,
-      content: '',
-      parentPath: '/src',
-    },
-    // src/utils/helpers.ts
-    {
-      projectId,
-      name: 'helpers.ts',
-      path: '/src/utils/helpers.ts',
+      name: 'helpers.js',
+      path: '/utils/helpers.js',
       type: 'file' as const,
-      parentPath: '/src/utils',
-      content: `/**
- * Utility functions for CodeNexus
- */
-
-export function formatDate(date: Date): string {
+      parentPath: '/utils',
+      content: `export function formatDate(date) {
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -329,23 +395,20 @@ export function formatDate(date: Date): string {
   }).format(date);
 }
 
-export function capitalize(str: string): string {
+export function capitalize(str) {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function debounce<T extends (...args: any[]) => void>(
-  fn: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  return (...args: Parameters<T>) => {
+export function debounce(fn, delay) {
+  let timeoutId;
+  return (...args) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn(...args), delay);
   };
 }
 
-export function slugify(text: string): string {
+export function slugify(text) {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -353,34 +416,19 @@ export function slugify(text: string): string {
 }
 `,
     },
-    // src/components folder
     {
       projectId,
-      name: 'components',
-      path: '/src/components',
-      type: 'folder' as const,
-      content: '',
-      parentPath: '/src',
-    },
-    // src/components/Header.tsx
-    {
-      projectId,
-      name: 'Header.tsx',
-      path: '/src/components/Header.tsx',
+      name: 'Header.jsx',
+      path: '/components/Header.jsx',
       type: 'file' as const,
-      parentPath: '/src/components',
+      parentPath: '/components',
       content: `import React from 'react';
 
-interface HeaderProps {
-  title: string;
-  subtitle?: string;
-}
-
-const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
+export default function Header({ title, subtitle }) {
   return (
     <header className="header">
       <div className="header-brand">
-        <span className="header-logo">⚡</span>
+        <span className="header-logo">CN</span>
         <h1 className="header-title">{title}</h1>
       </div>
       {subtitle && <p className="header-subtitle">{subtitle}</p>}
@@ -391,12 +439,9 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
       </nav>
     </header>
   );
-};
-
-export default Header;
+}
 `,
     },
-    // package.json at root
     {
       projectId,
       name: 'package.json',
@@ -404,49 +449,21 @@ export default Header;
       type: 'file' as const,
       parentPath: '/',
       content: `{
-  "name": "my-project",
+  "name": "codenexus-sample-project",
   "version": "1.0.0",
   "description": "A sample project in CodeNexus",
-  "main": "src/index.ts",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0"
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^7.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
-`,
-    },
-    // README.md at root
-    {
-      projectId,
-      name: 'README.md',
-      path: '/README.md',
-      type: 'file' as const,
-      parentPath: '/',
-      content: `# My Project
-
-Welcome to your CodeNexus project! 🚀
-
-## Getting Started
-
-1. Open files from the **Explorer** sidebar
-2. Edit code in the **Monaco Editor**
-3. Use **AI Chat** to get help with your code
-
-## Features
-
-- Real-time syntax highlighting
-- AI-powered code suggestions
-- Code health monitoring
-- Decision memory tracking
 `,
     },
   ];
@@ -459,5 +476,5 @@ Welcome to your CodeNexus project! 🚀
     await file.save();
   }
 
-  logger.info(`✅ Seeded ${sampleFiles.length} files for project "${projectId}".`);
+  logger.info(`Seeded ${sampleFiles.length} files for project "${projectId}".`);
 }

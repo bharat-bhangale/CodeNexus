@@ -15,6 +15,7 @@ export interface FileData {
   language: string;
   size: number;
   lineCount: number;
+  parentPath?: string;
   version: number;
   updatedAt?: string;
 }
@@ -38,7 +39,7 @@ export async function createFile(data: {
   type: 'file' | 'folder';
   content?: string;
   projectId?: string;
-}): Promise<{ id: string; name: string; path: string; type: string; language: string; parentPath: string }> {
+}): Promise<FileData> {
   const res = await api.post('/', {
     ...data,
     projectId: data.projectId || 'default',

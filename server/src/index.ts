@@ -38,7 +38,7 @@ const startServer = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect(MONGODB_URI);
-    const dbName = mongoose.connection.db.databaseName;
+    const dbName = mongoose.connection.db?.databaseName || mongoose.connection.name || 'unknown';
     logger.info(`📦 MongoDB connected to ${dbName}`);
 
     // Seed sample project (idempotent — only runs on first launch)

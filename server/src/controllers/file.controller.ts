@@ -34,6 +34,7 @@ export async function getFileById(req: Request, res: Response, next: NextFunctio
         language: file.language,
         size: file.size,
         lineCount: file.lineCount,
+        parentPath: file.parentPath,
         version: file.version,
         updatedAt: file.updatedAt,
       },
@@ -55,6 +56,13 @@ export async function createFile(req: Request, res: Response, next: NextFunction
       });
     }
 
+    if (type !== 'file' && type !== 'folder') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'type must be "file" or "folder"' },
+      });
+    }
+
     const file = await fileService.createFile({
       projectId: projectId || 'default',
       name,
@@ -71,8 +79,12 @@ export async function createFile(req: Request, res: Response, next: NextFunction
         name: file.name,
         path: file.path,
         type: file.type,
+        content: file.content,
         language: file.language,
         parentPath: file.parentPath,
+        size: file.size,
+        lineCount: file.lineCount,
+        version: file.version,
       },
     });
   } catch (err) {

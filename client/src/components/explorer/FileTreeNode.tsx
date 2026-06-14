@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { RefObject } from 'react';
 import type { FileTreeNode as FileTreeNodeType } from '@/stores/fileStore';
 import { useFileStore } from '@/stores/fileStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { detectLanguage, getLanguageColor } from '@/utils/languageDetector';
 import { fetchFileContent } from '@/services/fileApi';
+import InlineFileInput from './InlineFileInput';
 import {
   ChevronRight,
   ChevronDown,
@@ -16,7 +18,7 @@ import {
   FileJson,
   FileType,
   File,
-  Image,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 function getFileIcon(name: string, isDirectory: boolean, isOpen: boolean) {
@@ -54,30 +56,67 @@ function getFileIcon(name: string, isDirectory: boolean, isOpen: boolean) {
     case 'jpeg':
     case 'gif':
     case 'svg':
-      return <Image size={16} style={{ color: '#a1a1b5' }} />;
+      return <ImageIcon size={16} style={{ color: '#a1a1b5' }} />;
     default:
       return <File size={16} style={{ color }} />;
   }
+}
+
+interface InlineInputState {
+  visible: boolean;
+  parentPath: string;
+  type: 'file' | 'folder';
+  mode: 'create' | 'rename';
+  initialValue: string;
+  nodeId?: string;
+  error?: string;
 }
 
 interface FileTreeNodeProps {
   node: FileTreeNodeType;
   depth: number;
   onContextMenu: (e: React.MouseEvent, node: FileTreeNodeType) => void;
-  onCreateFile: (parentPath: string, type: 'file' | 'folder') => void;
+  inlineInput: InlineInputState;
+  inputRef: RefObject<HTMLInputElement | null>;
+  onInlineKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onInlineBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export default function FileTreeNode({
   node,
   depth,
   onContextMenu,
-  onCreateFile,
+  inlineInput,
+  inputRef,
+  onInlineKeyDown,
+  onInlineBlur,
 }: FileTreeNodeProps) {
   const [isOpen, setIsOpen] = useState(depth < 1); // auto-expand first level
   const selectedFilePath = useFileStore((s) => s.selectedFilePath);
   const setSelectedFilePath = useFileStore((s) => s.setSelectedFilePath);
   const openFile = useEditorStore((s) => s.openFile);
   const isSelected = selectedFilePath === node.path;
+  const isRenaming =
+    inlineInput.visible &&
+    inlineInput.mode === 'rename' &&
+    inlineInput.nodeId === node.id;
+
+  useEffect(() => {
+    if (
+      node.isDirectory &&
+      inlineInput.visible &&
+      inlineInput.mode === 'create' &&
+      inlineInput.parentPath === node.path
+    ) {
+      setIsOpen(true);
+    }
+  }, [
+    inlineInput.mode,
+    inlineInput.parentPath,
+    inlineInput.visible,
+    node.isDirectory,
+    node.path,
+  ]);
 
   const handleClick = useCallback(() => {
     if (node.isDirectory) {
@@ -144,7 +183,27 @@ export default function FileTreeNode({
         <span className="file-node-icon">
           {getFileIcon(node.name, node.isDirectory, isOpen)}
         </span>
-        <span className="file-node-name">{node.name}</span>
+        {isRenaming ? (
+          <span className="file-node-input-wrapper">
+            <input
+              key={`rename-${node.id}-${inlineInput.initialValue}`}
+              ref={inputRef}
+              className={`file-inline-input ${inlineInput.error ? 'file-inline-input-error' : ''}`}
+              type="text"
+              defaultValue={inlineInput.initialValue}
+              placeholder={node.isDirectory ? 'Folder name...' : 'File name...'}
+              onKeyDown={onInlineKeyDown}
+              onBlur={onInlineBlur}
+              onClick={(event) => event.stopPropagation()}
+              autoFocus
+            />
+            {inlineInput.error && (
+              <span className="file-inline-error">{inlineInput.error}</span>
+            )}
+          </span>
+        ) : (
+          <span className="file-node-name">{node.name}</span>
+        )}
       </div>
       {node.isDirectory && isOpen && node.children && (
         <div className="file-node-children" role="group">
@@ -154,9 +213,25 @@ export default function FileTreeNode({
               node={child}
               depth={depth + 1}
               onContextMenu={onContextMenu}
-              onCreateFile={onCreateFile}
+              inlineInput={inlineInput}
+              inputRef={inputRef}
+              onInlineKeyDown={onInlineKeyDown}
+              onInlineBlur={onInlineBlur}
             />
           ))}
+          {inlineInput.visible &&
+            inlineInput.mode === 'create' &&
+            inlineInput.parentPath === node.path && (
+              <InlineFileInput
+                depth={depth + 1}
+                type={inlineInput.type}
+                initialValue={inlineInput.initialValue}
+                error={inlineInput.error}
+                inputRef={inputRef}
+                onKeyDown={onInlineKeyDown}
+                onBlur={onInlineBlur}
+              />
+            )}
         </div>
       )}
     </>

@@ -31,6 +31,11 @@ interface EditorState {
   closeFile: (fileId: string) => void;
   setActiveFile: (fileId: string) => void;
   updateFileContent: (fileId: string, content: string) => void;
+  updateOpenFileMetadata: (
+    fileId: string,
+    metadata: Partial<Pick<OpenFile, 'name' | 'path' | 'language'>>
+  ) => void;
+  rewriteOpenFilePathPrefix: (oldPathPrefix: string, newPathPrefix: string) => void;
   markFileSaved: (fileId: string) => void;
   setCursorPosition: (position: CursorPosition) => void;
   setSelection: (selection: Selection | null) => void;
@@ -82,6 +87,31 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       openFiles: state.openFiles.map((f) =>
         f.id === fileId ? { ...f, content, isDirty: true } : f
       ),
+    }));
+  },
+
+  updateOpenFileMetadata: (fileId, metadata) => {
+    set((state) => ({
+      openFiles: state.openFiles.map((f) =>
+        f.id === fileId ? { ...f, ...metadata } : f
+      ),
+    }));
+  },
+
+  rewriteOpenFilePathPrefix: (oldPathPrefix, newPathPrefix) => {
+    set((state) => ({
+      openFiles: state.openFiles.map((file) => {
+        if (!file.path.startsWith(`${oldPathPrefix}/`)) return file;
+
+        const nextPath = file.path.replace(oldPathPrefix, newPathPrefix);
+        const nextName = nextPath.split('/').pop() || file.name;
+
+        return {
+          ...file,
+          path: nextPath,
+          name: nextName,
+        };
+      }),
     }));
   },
 
