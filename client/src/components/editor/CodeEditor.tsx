@@ -5,9 +5,11 @@ import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { useEditorStore } from '@/stores/editorStore';
 import { codenexusDarkTheme } from '@/themes/monacoThemes';
+import { updateFileContent as saveFileToApi } from '@/services/fileApi';
 
 export default function CodeEditor() {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeFile = useEditorStore((s) => {
     const id = s.activeFileId;
     return s.openFiles.find((f) => f.id === id);
@@ -49,12 +51,17 @@ export default function CodeEditor() {
       }
     });
 
-    // Keyboard shortcuts
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-      // Save (mark clean) — will integrate with backend later
-      const fileId = useEditorStore.getState().activeFileId;
-      if (fileId) {
-        useEditorStore.getState().markFileSaved(fileId);
+    // Keyboard shortcuts — Ctrl+S: save immediately
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
+      const state = useEditorStore.getState();
+      const file = state.openFiles.find((f) => f.id === state.activeFileId);
+      if (file && file.isDirty) {
+        try {
+          await saveFileToApi(file.id, file.content);
+          state.markFileSaved(file.id);
+        } catch (err) {
+          console.error('Failed to save file:', err);
+        }
       }
     });
 
@@ -65,6 +72,17 @@ export default function CodeEditor() {
     (value) => {
       if (activeFile && value !== undefined) {
         updateFileContent(activeFile.id, value);
+
+        // Debounced auto-save (500ms)
+        if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = setTimeout(async () => {
+          try {
+            await saveFileToApi(activeFile.id, value);
+            useEditorStore.getState().markFileSaved(activeFile.id);
+          } catch (err) {
+            console.error('Auto-save failed:', err);
+          }
+        }, 500);
       }
     },
     [activeFile, updateFileContent]
