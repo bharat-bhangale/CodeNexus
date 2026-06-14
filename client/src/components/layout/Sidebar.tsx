@@ -1,12 +1,12 @@
 'use client';
 
 import { useUIStore } from '@/stores/uiStore';
+import FileExplorer from '@/components/explorer/FileExplorer';
 import {
   Files,
   Search,
   GitBranch,
   Puzzle,
-  ChevronDown,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -42,38 +42,13 @@ export default function Sidebar() {
         ))}
       </div>
       <div className="sidebar-content">
-        <div className="sidebar-header">
-          <span className="sidebar-title">
-            {sidebarViews.find((v) => v.id === activeView)?.label?.toUpperCase()}
-          </span>
-          <ChevronDown size={14} className="sidebar-header-icon" />
-        </div>
-        <div className="sidebar-body">
-          {activeView === 'files' && (
-            <div className="sidebar-placeholder">
-              <div className="sidebar-file-tree">
-                <div className="file-tree-item file-tree-folder">
-                  <ChevronDown size={12} />
-                  <Files size={14} />
-                  <span>src</span>
-                </div>
-                <div className="file-tree-item file-tree-file" style={{ paddingLeft: 28 }}>
-                  <span className="file-dot file-dot-ts" />
-                  <span>hello.ts</span>
-                </div>
-                <div className="file-tree-item file-tree-file" style={{ paddingLeft: 28 }}>
-                  <span className="file-dot file-dot-css" />
-                  <span>styles.css</span>
-                </div>
-                <div className="file-tree-item file-tree-file" style={{ paddingLeft: 28 }}>
-                  <span className="file-dot file-dot-json" />
-                  <span>package.json</span>
-                </div>
-              </div>
+        {activeView === 'files' && <FileExplorer />}
+        {activeView === 'search' && (
+          <div className="sidebar-view-placeholder">
+            <div className="sidebar-view-header">
+              <span className="sidebar-title">SEARCH</span>
             </div>
-          )}
-          {activeView === 'search' && (
-            <div className="sidebar-placeholder">
+            <div className="sidebar-view-body">
               <input
                 type="text"
                 className="sidebar-search-input"
@@ -83,18 +58,28 @@ export default function Sidebar() {
               />
               <p className="sidebar-muted-text">Type to search across all files</p>
             </div>
-          )}
-          {activeView === 'git' && (
-            <div className="sidebar-placeholder">
-              <p className="sidebar-muted-text">Source control integration</p>
+          </div>
+        )}
+        {activeView === 'git' && (
+          <div className="sidebar-view-placeholder">
+            <div className="sidebar-view-header">
+              <span className="sidebar-title">SOURCE CONTROL</span>
             </div>
-          )}
-          {activeView === 'extensions' && (
-            <div className="sidebar-placeholder">
-              <p className="sidebar-muted-text">Extensions marketplace</p>
+            <div className="sidebar-view-body">
+              <p className="sidebar-muted-text">Source control integration coming soon</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+        {activeView === 'extensions' && (
+          <div className="sidebar-view-placeholder">
+            <div className="sidebar-view-header">
+              <span className="sidebar-title">EXTENSIONS</span>
+            </div>
+            <div className="sidebar-view-body">
+              <p className="sidebar-muted-text">Extensions marketplace coming soon</p>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );

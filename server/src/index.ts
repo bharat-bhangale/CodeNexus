@@ -6,6 +6,7 @@ import { createServer } from 'http';
 import { Server as SocketIO } from 'socket.io';
 import app from './app.js';
 import { logger } from './utils/logger.js';
+import { seedSampleProject } from './services/fileService.js';
 
 const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/codenexus';
@@ -39,6 +40,9 @@ const startServer = async () => {
     await mongoose.connect(MONGODB_URI);
     const dbName = mongoose.connection.db.databaseName;
     logger.info(`📦 MongoDB connected to ${dbName}`);
+
+    // Seed sample project (idempotent — only runs on first launch)
+    await seedSampleProject('default');
 
     // Start HTTP server
     httpServer.listen(PORT, () => {
