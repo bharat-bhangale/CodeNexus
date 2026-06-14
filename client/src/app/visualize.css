@@ -1,0 +1,499 @@
+/* ═══════════════════════════════════════════════════════════════
+   CodeNexus — Visualization Panel Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Panel Layout ─── */
+.viz-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.viz-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.viz-panel-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+/* ─── Type Selector ─── */
+.viz-type-selector {
+  display: flex;
+  gap: 2px;
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.viz-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.viz-type-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.viz-type-btn-active {
+  background: var(--accent-primary-alpha);
+  color: var(--accent-primary-hover);
+}
+
+/* ─── Controls Bar ─── */
+.viz-controls-bar {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.viz-scope-select {
+  flex: 1;
+  padding: 5px var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  outline: none;
+  cursor: pointer;
+}
+
+.viz-scope-select:focus {
+  border-color: var(--accent-primary);
+}
+
+.viz-generate-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 5px var(--space-3);
+  background: var(--accent-primary);
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.viz-generate-btn:hover:not(:disabled) {
+  background: var(--accent-primary-hover);
+  box-shadow: 0 0 12px var(--accent-primary-alpha);
+}
+
+.viz-generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.viz-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* ─── Graph Area ─── */
+.viz-graph-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 200px;
+}
+
+.viz-graph-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* React Flow overrides */
+.viz-graph-container .react-flow__renderer {
+  background: var(--bg-primary) !important;
+}
+
+.viz-graph-container .react-flow__edge-path {
+  stroke: var(--accent-primary);
+  stroke-width: 1.5;
+}
+
+.viz-graph-container .react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--accent-primary-hover);
+  stroke-width: 2;
+}
+
+.viz-graph-container .react-flow__edge-text {
+  fill: var(--text-muted);
+}
+
+.viz-minimap {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.viz-react-flow-controls {
+  display: none; /* We use our own controls */
+}
+
+/* ─── Custom Node ─── */
+.viz-node {
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+  max-width: 200px;
+  height: 48px;
+  padding: 0 var(--space-3);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.viz-node:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-elevated);
+}
+
+.viz-node-selected {
+  border-width: 2px;
+}
+
+.viz-node-dimmed {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.viz-node-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow: hidden;
+}
+
+.viz-node-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.viz-node-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viz-node-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: white;
+}
+
+.viz-handle {
+  width: 6px !important;
+  height: 6px !important;
+  background: var(--accent-primary) !important;
+  border: none !important;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.viz-node:hover .viz-handle {
+  opacity: 1;
+}
+
+/* ─── Node Tooltip ─── */
+.viz-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  min-width: 200px;
+  max-width: 280px;
+  padding: var(--space-2);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-tooltip);
+  animation: fadeIn 0.15s ease;
+  pointer-events: none;
+}
+
+.viz-tooltip-header {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.viz-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.viz-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.viz-tooltip-key {
+  color: var(--text-muted);
+}
+
+.viz-tooltip-val {
+  color: var(--text-secondary);
+  text-align: right;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viz-tooltip-footer {
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ─── Graph Controls Overlay ─── */
+.viz-controls {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.viz-controls > * {
+  pointer-events: all;
+}
+
+.viz-controls-search {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-2);
+  backdrop-filter: blur(8px);
+}
+
+.viz-controls-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.viz-controls-search-input {
+  flex: 1;
+  padding: 5px var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+.viz-controls-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.viz-controls-buttons {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  backdrop-filter: blur(8px);
+}
+
+.viz-controls-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viz-controls-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ─── Empty & Error States ─── */
+.viz-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.viz-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--accent-primary-alpha);
+  color: var(--accent-primary);
+  margin-bottom: var(--space-4);
+}
+
+.viz-empty-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+
+.viz-empty-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  max-width: 240px;
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+
+.viz-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-error-alpha);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+/* ─── Summary Section ─── */
+.viz-summary {
+  padding: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.viz-summary-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--accent-primary-hover);
+  margin-bottom: var(--space-2);
+}
+
+.viz-summary-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: 0 0 var(--space-2);
+}
+
+.viz-summary-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.viz-stat strong {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.viz-stat-sep {
+  color: var(--border-strong);
+}
+
+.viz-export-buttons {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.viz-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viz-export-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}

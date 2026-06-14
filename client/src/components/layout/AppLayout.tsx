@@ -23,6 +23,7 @@ export default function AppLayout() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const toggleBottomPanel = useUIStore((s) => s.toggleBottomPanel);
   const toggleRightPanel = useUIStore((s) => s.toggleRightPanel);
+  const setActiveRightPanel = useUIStore((s) => s.setActiveRightPanel);
 
   // Global keyboard shortcuts
   const handleKeyDown = useCallback(
@@ -47,8 +48,13 @@ export default function AppLayout() {
         e.preventDefault();
         toggleRightPanel();
       }
+      // Ctrl+Shift+E: Open Explain My Code / Visualize panel
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'E') {
+        e.preventDefault();
+        setActiveRightPanel('visualize');
+      }
     },
-    [toggleSidebar, toggleBottomPanel, toggleRightPanel]
+    [toggleSidebar, toggleBottomPanel, toggleRightPanel, setActiveRightPanel]
   );
 
   useEffect(() => {
