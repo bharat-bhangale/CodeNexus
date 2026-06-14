@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import healthRoutes from './health.routes.js';
 import fileRoutes from './file.routes.js';
+import explainRoutes from './explain.routes.js';
 
 export const router = Router();
 
@@ -9,6 +10,9 @@ router.use('/health', healthRoutes);
 
 // ─── File System ───
 router.use('/files', fileRoutes);
+
+// ─── Code Visualization ───
+router.use('/explain', explainRoutes);
 
 // ─── Future Routes ───
 // router.use('/auth', authRoutes);

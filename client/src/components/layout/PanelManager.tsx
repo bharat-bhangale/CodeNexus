@@ -1,17 +1,20 @@
 'use client';
 
 import { useUIStore, type RightPanelView } from '@/stores/uiStore';
+import VisualizationPanel from '@/components/visualize/VisualizationPanel';
 import {
   MessageSquare,
   Zap,
   Brain,
   Activity,
   ShieldCheck,
+  Network,
 } from 'lucide-react';
 
 const panelTabs: { id: RightPanelView; icon: React.ReactNode; label: string }[] = [
   { id: 'chat', icon: <MessageSquare size={16} />, label: 'Chat' },
   { id: 'intent', icon: <Zap size={16} />, label: 'Intent' },
+  { id: 'visualize', icon: <Network size={16} />, label: 'Visualize' },
   { id: 'memory', icon: <Brain size={16} />, label: 'Memory' },
   { id: 'health', icon: <Activity size={16} />, label: 'Health' },
   { id: 'review', icon: <ShieldCheck size={16} />, label: 'Review' },
@@ -54,6 +57,7 @@ export default function PanelManager() {
             description="Select code and choose an intent — performance, security, readability."
           />
         )}
+        {activePanel === 'visualize' && <VisualizationPanel />}
         {activePanel === 'memory' && (
           <PanelPlaceholder
             icon={<Brain size={32} />}
