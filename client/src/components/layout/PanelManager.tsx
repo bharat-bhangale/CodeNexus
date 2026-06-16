@@ -3,6 +3,7 @@
 import { useUIStore, type RightPanelView } from '@/stores/uiStore';
 import VisualizationPanel from '@/components/visualize/VisualizationPanel';
 import DecisionMemoryPanel from '@/components/memory/DecisionMemoryPanel';
+import ChatPanel from '@/components/chat/ChatPanel';
 import {
   MessageSquare,
   Zap,
@@ -44,13 +45,7 @@ export default function PanelManager() {
         ))}
       </div>
       <div className="panel-body">
-        {activePanel === 'chat' && (
-          <PanelPlaceholder
-            icon={<MessageSquare size={32} />}
-            title="AI Chat"
-            description="Ask anything about your code. I know your project."
-          />
-        )}
+        {activePanel === 'chat' && <ChatPanel />}
         {activePanel === 'intent' && (
           <PanelPlaceholder
             icon={<Zap size={32} />}

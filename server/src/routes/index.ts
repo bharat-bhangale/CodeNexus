@@ -3,6 +3,7 @@ import healthRoutes from './health.routes.js';
 import fileRoutes from './file.routes.js';
 import explainRoutes from './explain.routes.js';
 import memoryRoutes from './memory.routes.js';
+import chatRoutes from './chat.routes.js';
 
 export const router = Router();
 
@@ -18,9 +19,10 @@ router.use('/explain', explainRoutes);
 // ─── Decision Memory ───
 router.use('/memory', memoryRoutes);
 
+// ─── AI Chat ───
+router.use('/chat', chatRoutes);
+
 // ─── Future Routes ───
 // router.use('/auth', authRoutes);
 // router.use('/projects', projectRoutes);
 // router.use('/ai', aiRoutes);
-// router.use('/chat', chatRoutes);
-
