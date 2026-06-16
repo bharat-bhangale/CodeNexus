@@ -4,6 +4,7 @@ import { useUIStore, type RightPanelView } from '@/stores/uiStore';
 import VisualizationPanel from '@/components/visualize/VisualizationPanel';
 import DecisionMemoryPanel from '@/components/memory/DecisionMemoryPanel';
 import ChatPanel from '@/components/chat/ChatPanel';
+import ReviewPanel from '@/components/review/ReviewPanel';
 import {
   MessageSquare,
   Zap,
@@ -62,13 +63,7 @@ export default function PanelManager() {
             description="Overall code quality score and improvement suggestions."
           />
         )}
-        {activePanel === 'review' && (
-          <PanelPlaceholder
-            icon={<ShieldCheck size={32} />}
-            title="Code Review"
-            description="AI-powered code review and security analysis."
-          />
-        )}
+        {activePanel === 'review' && <ReviewPanel />}
       </div>
     </div>
   );
