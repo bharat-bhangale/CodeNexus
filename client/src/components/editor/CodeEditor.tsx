@@ -5,9 +5,11 @@ import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { useEditorStore } from '@/stores/editorStore';
 import { useReviewStore } from '@/stores/reviewStore';
+import { useHealthStore } from '@/stores/healthStore';
 import { codenexusDarkTheme } from '@/themes/monacoThemes';
 import { updateFileContent as saveFileToApi } from '@/services/fileApi';
 import { runReview } from '@/services/reviewApi';
+import { analyzeHealth } from '@/services/healthApi';
 import { setMonacoEditor, setMonacoInstance } from '@/utils/monacoRef';
 import { useMonacoReviewMarkers } from '@/hooks/useMonacoReviewMarkers';
 
@@ -15,6 +17,7 @@ export default function CodeEditor() {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoReviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoHealthTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeFile = useEditorStore((s) => {
     const id = s.activeFileId;
     return s.openFiles.find((f) => f.id === id);
@@ -109,6 +112,21 @@ export default function CodeEditor() {
                 }
               }, 2000);
             }
+
+            // Auto-health refresh after save (3s debounce)
+            if (autoHealthTimerRef.current) clearTimeout(autoHealthTimerRef.current);
+            autoHealthTimerRef.current = setTimeout(async () => {
+              try {
+                const healthState = useHealthStore.getState();
+                if (healthState.overallScore !== null) {
+                  // Only refresh if already analyzed
+                  const result = await analyzeHealth();
+                  healthState.setHealth(result);
+                }
+              } catch {
+                // Auto-health failure is silent
+              }
+            }, 3000);
           } catch (err) {
             console.error('Auto-save failed:', err);
           }

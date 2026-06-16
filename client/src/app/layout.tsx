@@ -6,6 +6,7 @@ import "./visualize.css";
 import "./memory.css";
 import "./chat.css";
 import "./review.css";
+import "./health.css";
 
 const inter = Inter({
   subsets: ["latin"],

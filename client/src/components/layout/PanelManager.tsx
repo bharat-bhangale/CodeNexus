@@ -5,6 +5,7 @@ import VisualizationPanel from '@/components/visualize/VisualizationPanel';
 import DecisionMemoryPanel from '@/components/memory/DecisionMemoryPanel';
 import ChatPanel from '@/components/chat/ChatPanel';
 import ReviewPanel from '@/components/review/ReviewPanel';
+import HealthDashboard from '@/components/health/HealthDashboard';
 import {
   MessageSquare,
   Zap,
@@ -56,13 +57,7 @@ export default function PanelManager() {
         )}
         {activePanel === 'visualize' && <VisualizationPanel />}
         {activePanel === 'memory' && <DecisionMemoryPanel />}
-        {activePanel === 'health' && (
-          <PanelPlaceholder
-            icon={<Activity size={32} />}
-            title="Code Health"
-            description="Overall code quality score and improvement suggestions."
-          />
-        )}
+        {activePanel === 'health' && <HealthDashboard />}
         {activePanel === 'review' && <ReviewPanel />}
       </div>
     </div>
