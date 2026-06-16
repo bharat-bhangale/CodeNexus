@@ -78,6 +78,11 @@ export default function AppLayout() {
             });
         }
       }
+      // Ctrl+Shift+H: Open Health Dashboard
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'H') {
+        e.preventDefault();
+        setActiveRightPanel('health');
+      }
     },
     [toggleSidebar, toggleBottomPanel, toggleRightPanel, setActiveRightPanel]
   );

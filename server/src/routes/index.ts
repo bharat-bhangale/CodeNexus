@@ -5,6 +5,7 @@ import explainRoutes from './explain.routes.js';
 import memoryRoutes from './memory.routes.js';
 import chatRoutes from './chat.routes.js';
 import reviewRoutes from './review.routes.js';
+import codeHealthRoutes from './codeHealth.routes.js';
 
 export const router = Router();
 
@@ -25,6 +26,9 @@ router.use('/chat', chatRoutes);
 
 // ─── Code Review ───
 router.use('/review', reviewRoutes);
+
+// ─── Code Health Dashboard ───
+router.use('/code-health', codeHealthRoutes);
 
 // ─── Future Routes ───
 // router.use('/auth', authRoutes);
