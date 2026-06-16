@@ -14,6 +14,8 @@ import CodeEditor from '@/components/editor/CodeEditor';
 import EditorTabs from '@/components/editor/EditorTabs';
 import { useUIStore } from '@/stores/uiStore';
 import { useEditorStore } from '@/stores/editorStore';
+import { useReviewStore } from '@/stores/reviewStore';
+import { runReview } from '@/services/reviewApi';
 import { Terminal } from 'lucide-react';
 
 export default function AppLayout() {
@@ -57,6 +59,24 @@ export default function AppLayout() {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
         e.preventDefault();
         setActiveRightPanel('memory');
+      }
+      // Ctrl+Shift+R: Open Review panel and trigger review
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+        e.preventDefault();
+        setActiveRightPanel('review');
+        // Auto-trigger review on active file
+        const edState = useEditorStore.getState();
+        const file = edState.openFiles.find((f) => f.id === edState.activeFileId);
+        if (file) {
+          useReviewStore.getState().setReviewing(true);
+          runReview(file.content, file.language, file.path)
+            .then((result) => {
+              useReviewStore.getState().setIssues(result.issues, result.summary, result.id);
+            })
+            .catch(() => {
+              useReviewStore.getState().setError('Review failed');
+            });
+        }
       }
     },
     [toggleSidebar, toggleBottomPanel, toggleRightPanel, setActiveRightPanel]

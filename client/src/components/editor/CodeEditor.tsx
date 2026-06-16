@@ -4,12 +4,17 @@ import { useCallback, useRef } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { useEditorStore } from '@/stores/editorStore';
+import { useReviewStore } from '@/stores/reviewStore';
 import { codenexusDarkTheme } from '@/themes/monacoThemes';
 import { updateFileContent as saveFileToApi } from '@/services/fileApi';
+import { runReview } from '@/services/reviewApi';
+import { setMonacoEditor, setMonacoInstance } from '@/utils/monacoRef';
+import { useMonacoReviewMarkers } from '@/hooks/useMonacoReviewMarkers';
 
 export default function CodeEditor() {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoReviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeFile = useEditorStore((s) => {
     const id = s.activeFileId;
     return s.openFiles.find((f) => f.id === id);
@@ -18,8 +23,15 @@ export default function CodeEditor() {
   const setCursorPosition = useEditorStore((s) => s.setCursorPosition);
   const setSelection = useEditorStore((s) => s.setSelection);
 
+  // Activate review markers hook
+  useMonacoReviewMarkers();
+
   const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
+
+    // Share Monaco refs globally for review markers and other hooks
+    setMonacoEditor(editor);
+    setMonacoInstance(monaco as any);
 
     // Register the CodeNexus dark theme
     monaco.editor.defineTheme('codenexus-dark', codenexusDarkTheme);
@@ -79,6 +91,24 @@ export default function CodeEditor() {
           try {
             await saveFileToApi(activeFile.id, value);
             useEditorStore.getState().markFileSaved(activeFile.id);
+
+            // Auto-review after save (2s debounce)
+            const reviewState = useReviewStore.getState();
+            if (reviewState.autoReview && activeFile) {
+              if (autoReviewTimerRef.current) clearTimeout(autoReviewTimerRef.current);
+              autoReviewTimerRef.current = setTimeout(async () => {
+                try {
+                  const edState = useEditorStore.getState();
+                  const file = edState.openFiles.find((f) => f.id === edState.activeFileId);
+                  if (!file) return;
+                  useReviewStore.getState().setReviewing(true);
+                  const result = await runReview(file.content, file.language, file.path);
+                  useReviewStore.getState().setIssues(result.issues, result.summary, result.id);
+                } catch {
+                  // Auto-review failure is silent
+                }
+              }, 2000);
+            }
           } catch (err) {
             console.error('Auto-save failed:', err);
           }
@@ -169,6 +199,7 @@ export default function CodeEditor() {
           autoClosingBrackets: 'always',
           autoClosingQuotes: 'always',
           autoIndent: 'full',
+          glyphMargin: true,
         }}
         loading={
           <div className="code-editor-loading">

@@ -4,6 +4,7 @@ import fileRoutes from './file.routes.js';
 import explainRoutes from './explain.routes.js';
 import memoryRoutes from './memory.routes.js';
 import chatRoutes from './chat.routes.js';
+import reviewRoutes from './review.routes.js';
 
 export const router = Router();
 
@@ -22,7 +23,10 @@ router.use('/memory', memoryRoutes);
 // ─── AI Chat ───
 router.use('/chat', chatRoutes);
 
+// ─── Code Review ───
+router.use('/review', reviewRoutes);
+
 // ─── Future Routes ───
 // router.use('/auth', authRoutes);
 // router.use('/projects', projectRoutes);
-// router.use('/ai', aiRoutes);
+
