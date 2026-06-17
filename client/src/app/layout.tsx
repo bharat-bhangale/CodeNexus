@@ -7,6 +7,8 @@ import "./memory.css";
 import "./chat.css";
 import "./review.css";
 import "./health.css";
+import "./auth.css";
+import AuthProvider from "@/components/auth/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,7 +34,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
