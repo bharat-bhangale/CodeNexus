@@ -3,6 +3,7 @@
 import { use } from 'react';
 import dynamic from 'next/dynamic';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import DesktopRequiredScreen from '@/components/app/DesktopRequiredScreen';
 
 const AppLayout = dynamic(
   () => import('@/components/layout/AppLayout'),
@@ -14,7 +15,12 @@ export default function EditorPage({ params }: { params: Promise<{ projectId: st
 
   return (
     <ProtectedRoute>
-      <AppLayout />
+      <div className="cn-mobile-blocker">
+        <DesktopRequiredScreen />
+      </div>
+      <div className="cn-desktop-workspace">
+        <AppLayout />
+      </div>
     </ProtectedRoute>
   );
 }

@@ -75,7 +75,7 @@ function PanelPlaceholder({
 }) {
   return (
     <div className="panel-placeholder">
-      <div className="panel-placeholder-icon">{icon}</div>
+      <div className="illustrated-empty-mark panel-placeholder-icon">{icon}</div>
       <h3 className="panel-placeholder-title">{title}</h3>
       <p className="panel-placeholder-desc">{description}</p>
     </div>

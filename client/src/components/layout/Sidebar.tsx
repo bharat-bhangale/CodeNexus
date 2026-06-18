@@ -56,7 +56,11 @@ export default function Sidebar() {
                 aria-label="Search files"
                 id="sidebar-search-input"
               />
-              <p className="sidebar-muted-text">Type to search across all files</p>
+              <SidebarEmptyState
+                icon={<Search size={24} />}
+                title="Find code fast"
+                description="Search opens here when files are indexed for the active project."
+              />
             </div>
           </div>
         )}
@@ -66,7 +70,11 @@ export default function Sidebar() {
               <span className="sidebar-title">SOURCE CONTROL</span>
             </div>
             <div className="sidebar-view-body">
-              <p className="sidebar-muted-text">Source control integration coming soon</p>
+              <SidebarEmptyState
+                icon={<GitBranch size={24} />}
+                title="No repository connected"
+                description="Connect source control to review changes, branches, and commit context in one place."
+              />
             </div>
           </div>
         )}
@@ -76,11 +84,33 @@ export default function Sidebar() {
               <span className="sidebar-title">EXTENSIONS</span>
             </div>
             <div className="sidebar-view-body">
-              <p className="sidebar-muted-text">Extensions marketplace coming soon</p>
+              <SidebarEmptyState
+                icon={<Puzzle size={24} />}
+                title="Extensions are coming"
+                description="This panel will host add-ons that extend CodeNexus for your stack."
+              />
             </div>
           </div>
         )}
       </div>
     </aside>
+  );
+}
+
+function SidebarEmptyState({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="sidebar-empty-state">
+      <div className="illustrated-empty-mark">{icon}</div>
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
   );
 }

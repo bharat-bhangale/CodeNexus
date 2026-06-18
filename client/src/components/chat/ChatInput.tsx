@@ -58,7 +58,7 @@ export default function ChatInput({ onSend, isStreaming }: ChatInputProps) {
     if (!trimmed || isStreaming) return;
 
     // Check if message starts with a slash command
-    const parts = trimmed.match(/^(\/\w+)\s*(.*)/s);
+    const parts = trimmed.match(/^(\/\w+)\s*([\s\S]*)/);
     if (parts) {
       const cmd = parts[1];
       const msg = parts[2] || `Use ${cmd} on the selected code`;

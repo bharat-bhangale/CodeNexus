@@ -12,7 +12,7 @@ import {
   deleteFileApi,
   renameFileApi,
 } from '@/services/fileApi';
-import { FilePlus, FolderPlus, Loader2, RefreshCw } from 'lucide-react';
+import { FileCode2, FilePlus, FolderPlus, Loader2, RefreshCw } from 'lucide-react';
 
 interface ContextMenuState {
   visible: boolean;
@@ -71,6 +71,14 @@ function getApiErrorMessage(error: unknown): string {
   }
 
   return error instanceof Error ? error.message : 'File operation failed';
+}
+
+function showWorkspaceToast(title: string, description: string, variant: 'success' | 'info' | 'warning' = 'success') {
+  window.dispatchEvent(
+    new CustomEvent('codenexus:toast', {
+      detail: { title, description, variant },
+    })
+  );
 }
 
 export default function FileExplorer() {
@@ -181,6 +189,10 @@ export default function FileExplorer() {
             content: inlineInput.type === 'file' ? '' : undefined,
           });
           setSelectedFilePath(path);
+          showWorkspaceToast(
+            inlineInput.type === 'file' ? 'File created' : 'Folder created',
+            path
+          );
         } else if (inlineInput.mode === 'rename' && inlineInput.nodeId) {
           const oldPath =
             inlineInput.targetPath ||
@@ -199,6 +211,7 @@ export default function FileExplorer() {
           }
 
           setSelectedFilePath(updatedFile.path);
+          showWorkspaceToast('Renamed successfully', updatedFile.path);
         }
 
         await loadTree();
@@ -295,17 +308,23 @@ export default function FileExplorer() {
         }
 
         await loadTree();
+        showWorkspaceToast('Deleted successfully', node.path);
       } catch (err) {
         console.error('Failed to delete file:', err);
+        showWorkspaceToast('Delete failed', getApiErrorMessage(err), 'warning');
       }
     },
     [deleteFile, loadTree, setSelectedFilePath]
   );
 
   const handleCopyPath = useCallback((path: string) => {
-    navigator.clipboard.writeText(path).catch(() => {
-      console.warn('Failed to copy path to clipboard');
-    });
+    navigator.clipboard
+      .writeText(path)
+      .then(() => showWorkspaceToast('Path copied', path, 'info'))
+      .catch(() => {
+        console.warn('Failed to copy path to clipboard');
+        showWorkspaceToast('Copy failed', 'The path could not be copied to the clipboard.', 'warning');
+      });
   }, []);
 
   const handleBackgroundContextMenu = useCallback(
@@ -361,7 +380,11 @@ export default function FileExplorer() {
           </div>
         ) : fileTree.length === 0 ? (
           <div className="file-explorer-empty">
-            <p>No files yet.</p>
+            <div className="illustrated-empty-mark">
+              <FileCode2 size={24} />
+            </div>
+            <h3>No files yet</h3>
+            <p>Create your first file and CodeNexus will keep the workspace context ready.</p>
             <button
               className="file-explorer-create-btn"
               onClick={() => showInlineInput('/', 'file')}
