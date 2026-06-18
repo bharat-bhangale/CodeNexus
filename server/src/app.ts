@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import { router as apiRouter } from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.middleware.js';
 import { logger } from './utils/logger.js';
@@ -20,6 +21,7 @@ app.use(cors({
 // ─── Body Parsing ───
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // ─── Rate Limiting ───
 const generalLimiter = rateLimit({
