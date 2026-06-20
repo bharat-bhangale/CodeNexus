@@ -8,7 +8,9 @@ import "./chat.css";
 import "./review.css";
 import "./health.css";
 import "./auth.css";
-import AuthProvider from "@/components/auth/AuthProvider";
+import "./landing.css";
+import "./polish.css";
+import AppProviders from "@/components/app/AppProviders";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +24,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "CodeNexus | AI Code Editor",
-  description: "The AI Code Editor That Thinks With You — intelligent intent detection, code visualization, and decision memory.",
+  description:
+    "The AI Code Editor That Thinks With You - intelligent intent detection, code visualization, and decision memory.",
   keywords: ["code editor", "AI", "IDE", "TypeScript", "Monaco Editor"],
 };
 
@@ -34,9 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
