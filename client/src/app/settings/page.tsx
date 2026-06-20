@@ -38,7 +38,7 @@ function SettingsContent() {
   const [autoSave, setAutoSave] = useState(user?.preferences?.autoSave ?? true);
 
   // AI config
-  const [aiProvider, setAiProvider] = useState(user?.aiConfig?.provider || 'openai');
+  const [aiProvider, setAiProvider] = useState(user?.aiConfig?.provider || 'google');
   const [aiModel, setAiModel] = useState(user?.aiConfig?.model || 'gpt-4o');
   const [aiKey, setAiKey] = useState('');
   const [temperature, setTemperature] = useState(user?.aiConfig?.temperature || 0.3);
@@ -202,10 +202,15 @@ function SettingsContent() {
 
           <div className="settings-row">
             <div className="settings-row-label">Provider</div>
-            <select className="settings-select" value={aiProvider} onChange={(e) => setAiProvider(e.target.value)}>
+            <select
+              id="ai-provider"
+              className="settings-select"
+              value={aiProvider}
+              onChange={(e) => setAiProvider(e.target.value)}
+            >
+              <option value="google">Google Gemini</option>
               <option value="openai">OpenAI</option>
               <option value="anthropic">Anthropic</option>
-              <option value="google">Google</option>
             </select>
           </div>
 
@@ -215,7 +220,7 @@ function SettingsContent() {
               className="settings-input"
               value={aiModel}
               onChange={(e) => setAiModel(e.target.value)}
-              placeholder="gpt-4o"
+              placeholder="gemini-2.5-flash"
             />
           </div>
 
@@ -229,7 +234,7 @@ function SettingsContent() {
               type="password"
               value={aiKey}
               onChange={(e) => setAiKey(e.target.value)}
-              placeholder="sk-••••••"
+              placeholder="AIza..."
               style={{ width: 200 }}
             />
           </div>

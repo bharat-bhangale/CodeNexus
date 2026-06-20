@@ -78,7 +78,7 @@ const UserSchema = new Schema<IUser>(
     },
 
     aiConfig: {
-      provider: { type: String, enum: ['openai', 'anthropic', 'google'], default: 'openai' },
+      provider: { type: String, enum: ['openai', 'anthropic', 'google'], default: 'google' },
       model: { type: String, default: 'gpt-4o' },
       apiKey: { type: String, default: null, select: false },
       temperature: { type: Number, min: 0, max: 1, default: 0.3 },

@@ -40,7 +40,7 @@ export interface FixResponse {
 export async function reviewCode(req: ReviewRequest): Promise<ReviewResponse> {
   const startTime = Date.now();
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   const hasValidKey =
     apiKey && apiKey.length > 20 && !apiKey.includes('your') && !apiKey.includes('here');
 
@@ -49,11 +49,11 @@ export async function reviewCode(req: ReviewRequest): Promise<ReviewResponse> {
 
   if (hasValidKey) {
     try {
-      const result = await callOpenAIReview(req, apiKey!);
+      const result = await callGeminiReview(req, apiKey!);
       issues = result.issues;
-      model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+      model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     } catch (err: any) {
-      logger.error(`OpenAI review error: ${err.message}`);
+      logger.error(`Gemini review error: ${err.message}`);
       issues = getMockReviewResults(req.code, req.language);
       model = 'mock';
     }
@@ -77,15 +77,15 @@ export async function reviewCode(req: ReviewRequest): Promise<ReviewResponse> {
 
 // ─── Generate Fix ───
 export async function generateFix(req: FixRequest): Promise<FixResponse> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   const hasValidKey =
     apiKey && apiKey.length > 20 && !apiKey.includes('your') && !apiKey.includes('here');
 
   if (hasValidKey) {
     try {
-      return await callOpenAIFix(req, apiKey!);
+      return await callGeminiFix(req, apiKey!);
     } catch (err: any) {
-      logger.error(`OpenAI fix error: ${err.message}`);
+      logger.error(`Gemini fix error: ${err.message}`);
       return getMockFix(req);
     }
   }
@@ -93,45 +93,56 @@ export async function generateFix(req: FixRequest): Promise<FixResponse> {
   return getMockFix(req);
 }
 
-// ─── OpenAI Calls ───
+// ─── Gemini Calls ───
 
-async function callOpenAIReview(
+async function callGeminiReview(
   req: ReviewRequest,
   apiKey: string
 ): Promise<{ issues: IReviewIssue[] }> {
-  const { default: OpenAI } = await import('openai');
-  const openai = new OpenAI({ apiKey });
+  const { GoogleGenAI, Type } = await import('@google/genai');
+  const ai = new GoogleGenAI({ apiKey });
 
-  const systemPrompt = `You are a senior code reviewer. Analyze the code for issues in these categories: bugs, security vulnerabilities, performance problems, style issues, accessibility concerns, and best-practice violations.
+  const systemInstruction = `You are a senior code reviewer. Analyze the code for issues in these categories: bugs, security vulnerabilities, performance problems, style issues, accessibility concerns, and best-practice violations.
 
-Return a JSON array of issues. Each issue must have:
-- severity: "critical" | "warning" | "info"
-- category: "bug" | "security" | "performance" | "style" | "accessibility" | "best-practice"
-- lineStart: number (1-indexed)
-- lineEnd: number (1-indexed)
-- title: string (short, 5-10 words)
-- description: string (detailed explanation, 1-3 sentences)
-- codeSnippet: string (the problematic code)
-- suggestedFix: string (corrected code)
-- fixExplanation: string (why this fix is better)
-
-Return ONLY valid JSON array. No markdown, no explanation outside JSON.
+Return a JSON array of issues.
 ${req.projectRules?.length ? `\nProject rules to follow:\n${req.projectRules.map((r) => `- ${r}`).join('\n')}` : ''}`;
 
   const userPrompt = `Review this ${req.language} code from "${req.filePath}":\n\n\`\`\`${req.language}\n${req.code}\n\`\`\``;
 
-  const completion = await openai.chat.completions.create({
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ],
-    temperature: 0.2,
-    max_tokens: 4000,
-    response_format: { type: 'json_object' },
+  const response = await ai.models.generateContent({
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+    contents: userPrompt,
+    config: {
+      systemInstruction,
+      temperature: 0.2,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          issues: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                severity: { type: Type.STRING },
+                category: { type: Type.STRING },
+                lineStart: { type: Type.INTEGER },
+                lineEnd: { type: Type.INTEGER },
+                title: { type: Type.STRING },
+                description: { type: Type.STRING },
+                codeSnippet: { type: Type.STRING },
+                suggestedFix: { type: Type.STRING },
+                fixExplanation: { type: Type.STRING }
+              },
+              required: ["severity", "category", "lineStart", "lineEnd", "title", "description"]
+            }
+          }
+        }
+      }
+    }
   });
 
-  const content = completion.choices[0]?.message?.content || '{"issues":[]}';
+  const content = response.text() || '{"issues":[]}';
   const parsed = JSON.parse(content);
   const rawIssues = Array.isArray(parsed) ? parsed : parsed.issues || [];
 
@@ -153,9 +164,9 @@ ${req.projectRules?.length ? `\nProject rules to follow:\n${req.projectRules.map
   };
 }
 
-async function callOpenAIFix(req: FixRequest, apiKey: string): Promise<FixResponse> {
-  const { default: OpenAI } = await import('openai');
-  const openai = new OpenAI({ apiKey });
+async function callGeminiFix(req: FixRequest, apiKey: string): Promise<FixResponse> {
+  const { GoogleGenAI, Type } = await import('@google/genai');
+  const ai = new GoogleGenAI({ apiKey });
 
   const prompt = `Fix this issue in the ${req.language} code:
 
@@ -168,23 +179,26 @@ ${req.issue.codeSnippet ? `Problematic code:\n\`\`\`\n${req.issue.codeSnippet}\n
 Full file:
 \`\`\`${req.language}
 ${req.code}
-\`\`\`
+\`\`\``;
 
-Return JSON with:
-- fixedCode: the entire file with the fix applied
-- explanation: brief explanation of the changes
-
-Return ONLY valid JSON. No markdown wrapping.`;
-
-  const completion = await openai.chat.completions.create({
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.1,
-    max_tokens: 4000,
-    response_format: { type: 'json_object' },
+  const response = await ai.models.generateContent({
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+    contents: prompt,
+    config: {
+      temperature: 0.1,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          fixedCode: { type: Type.STRING, description: "the entire file with the fix applied" },
+          explanation: { type: Type.STRING, description: "brief explanation of the changes" }
+        },
+        required: ["fixedCode", "explanation"]
+      }
+    }
   });
 
-  const content = completion.choices[0]?.message?.content || '{}';
+  const content = response.text() || '{}';
   const parsed = JSON.parse(content);
   return {
     fixedCode: parsed.fixedCode || req.code,

@@ -70,36 +70,39 @@ export async function chat(req: Request, res: Response, _next: NextFunction) {
     const startTime = Date.now();
     let fullResponse = '';
 
-    // Check if OpenAI is configured with a real key (not a placeholder)
-    const apiKey = process.env.OPENAI_API_KEY;
+    // Check if Gemini is configured with a real key (not a placeholder)
+    const apiKey = process.env.GEMINI_API_KEY;
     const hasValidKey = apiKey && apiKey.length > 20 && !apiKey.includes('your') && !apiKey.includes('here');
 
     if (hasValidKey) {
-      // Real OpenAI streaming
+      // Real Gemini streaming
       try {
-        const { default: OpenAI } = await import('openai');
-        const openai = new OpenAI({ apiKey });
+        const { GoogleGenAI } = await import('@google/genai');
+        const ai = new GoogleGenAI({ apiKey });
 
-        const stream = await openai.chat.completions.create({
-          model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...recentMessages,
-          ],
-          stream: true,
-          temperature: 0.3,
-          max_tokens: 4000,
+        const contents = recentMessages.map((msg: any) => ({
+          role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        }));
+
+        const stream = await ai.models.generateContentStream({
+          model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+          contents,
+          config: {
+            systemInstruction: systemPrompt,
+            temperature: 0.3,
+          },
         });
 
         for await (const chunk of stream) {
-          const content = chunk.choices[0]?.delta?.content || '';
+          const content = chunk.text() || '';
           if (content) {
             fullResponse += content;
             res.write(`data: ${JSON.stringify({ content, done: false })}\n\n`);
           }
         }
       } catch (aiErr: any) {
-        logger.error(`OpenAI error: ${aiErr.message}`);
+        logger.error(`Gemini error: ${aiErr.message}`);
         const errorMsg = `I encountered an error: ${aiErr.message}. Please check your API key.`;
         fullResponse = errorMsg;
         res.write(`data: ${JSON.stringify({ content: errorMsg, done: false })}\n\n`);
@@ -121,7 +124,7 @@ export async function chat(req: Request, res: Response, _next: NextFunction) {
       role: 'assistant',
       content: fullResponse,
       metadata: {
-        model: hasValidKey ? (process.env.OPENAI_MODEL || 'gpt-4o-mini') : 'mock',
+        model: hasValidKey ? (process.env.GEMINI_MODEL || 'gemini-2.5-flash') : 'mock',
         latency,
         command: command || undefined,
         codeBlocks: codeBlocks.map((cb) => ({
