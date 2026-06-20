@@ -1,0 +1,128 @@
+/* Terminal Integration */
+.terminal-panel {
+  background: var(--bg-primary);
+}
+
+.terminal-panel-header {
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 34px;
+}
+
+.terminal-panel-header .bottom-panel-tabs {
+  flex-shrink: 0;
+}
+
+.terminal-panel-header .bottom-panel-tab:disabled {
+  opacity: 0.45;
+}
+
+.terminal-session-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.terminal-session-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.terminal-session-tab,
+.terminal-session-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.terminal-session-tab {
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  max-width: 112px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-session-add {
+  width: 24px;
+}
+
+.terminal-session-tab:hover,
+.terminal-session-add:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.terminal-session-tab-active {
+  color: var(--text-primary);
+  background: var(--bg-active);
+  border-color: var(--border-default);
+}
+
+.terminal-workspace {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.terminal-xterm-host {
+  width: 100%;
+  height: 100%;
+  padding: var(--space-2) var(--space-3);
+  overflow: hidden;
+}
+
+.terminal-xterm-host .xterm {
+  height: 100%;
+}
+
+.terminal-xterm-host .xterm-viewport {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-elevated) transparent;
+}
+
+.terminal-xterm-host .xterm-viewport::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminal-xterm-host .xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+}
+
+.terminal-ai-fix {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: min(520px, calc(100% - 24px));
+  padding: var(--space-2) var(--space-3);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+  pointer-events: none;
+}
+
+.terminal-ai-fix svg {
+  color: var(--color-warning);
+  flex-shrink: 0;
+  margin-top: 1px;
+}

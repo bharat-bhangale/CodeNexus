@@ -6,7 +6,9 @@ import DecisionMemoryPanel from '@/components/memory/DecisionMemoryPanel';
 import ChatPanel from '@/components/chat/ChatPanel';
 import ReviewPanel from '@/components/review/ReviewPanel';
 import HealthDashboard from '@/components/health/HealthDashboard';
+import RegexPlayground from '@/components/regex/RegexPlayground';
 import {
+  Braces,
   MessageSquare,
   Zap,
   Brain,
@@ -20,6 +22,7 @@ const panelTabs: { id: RightPanelView; icon: React.ReactNode; label: string }[] 
   { id: 'intent', icon: <Zap size={16} />, label: 'Intent' },
   { id: 'visualize', icon: <Network size={16} />, label: 'Visualize' },
   { id: 'memory', icon: <Brain size={16} />, label: 'Memory' },
+  { id: 'regex', icon: <Braces size={16} />, label: 'Regex' },
   { id: 'health', icon: <Activity size={16} />, label: 'Health' },
   { id: 'review', icon: <ShieldCheck size={16} />, label: 'Review' },
 ];
@@ -57,6 +60,7 @@ export default function PanelManager() {
         )}
         {activePanel === 'visualize' && <VisualizationPanel />}
         {activePanel === 'memory' && <DecisionMemoryPanel />}
+        {activePanel === 'regex' && <RegexPlayground />}
         {activePanel === 'health' && <HealthDashboard />}
         {activePanel === 'review' && <ReviewPanel />}
       </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import "@xterm/xterm/css/xterm.css";
 import "./globals.css";
 import "./layout.css";
 import "./visualize.css";
@@ -7,6 +8,8 @@ import "./memory.css";
 import "./chat.css";
 import "./review.css";
 import "./health.css";
+import "./terminal.css";
+import "./regex.css";
 import "./auth.css";
 import "./landing.css";
 import "./polish.css";
