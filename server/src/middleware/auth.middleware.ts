@@ -51,7 +51,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
     next();
   } catch (error: any) {
-    logger.warn(`Auth failed: ${error.message}`);
+    logger.warn(`Auth failed: ${error.message}. Header auth: ${req.headers.authorization ? 'yes' : 'no'}, Cookie auth: ${req.cookies?.token ? 'yes' : 'no'}`);
 
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({

@@ -6,7 +6,6 @@ import crypto from 'crypto';
 import { UserModel } from '../models/User.js';
 import { logger } from '../utils/logger.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const ACCESS_TOKEN_EXPIRY = '1h';
 const REFRESH_TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -34,9 +33,10 @@ const loginSchema = Joi.object({
 
 // ─── Helper: generate tokens ───
 function generateAccessToken(user: { _id: string; email: string }) {
+  const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
   return jwt.sign(
     { id: user._id.toString(), email: user.email, role: 'user' },
-    JWT_SECRET,
+    secret,
     { expiresIn: ACCESS_TOKEN_EXPIRY }
   );
 }
