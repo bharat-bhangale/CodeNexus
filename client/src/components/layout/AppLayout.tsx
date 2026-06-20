@@ -10,13 +10,14 @@ import TopBar from './TopBar';
 import Sidebar from './Sidebar';
 import BottomBar from './BottomBar';
 import PanelManager from './PanelManager';
+import TerminalPanel from '@/components/terminal/TerminalPanel';
 import CodeEditor from '@/components/editor/CodeEditor';
 import EditorTabs from '@/components/editor/EditorTabs';
 import { useUIStore } from '@/stores/uiStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useReviewStore } from '@/stores/reviewStore';
 import { runReview } from '@/services/reviewApi';
-import { Monitor, Terminal } from 'lucide-react';
+import { Monitor } from 'lucide-react';
 
 export default function AppLayout() {
   const sidebarVisible = useUIStore((s) => s.sidebarVisible);
@@ -80,6 +81,11 @@ export default function AppLayout() {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'H') {
         e.preventDefault();
         setActiveRightPanel('health');
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'X') {
+        e.preventDefault();
+        setActiveRightPanel('regex');
       }
     },
     [toggleSidebar, toggleBottomPanel, toggleRightPanel, setActiveRightPanel]
@@ -149,28 +155,7 @@ export default function AppLayout() {
                       maxSize={60}
                       className="app-panel-bottom"
                     >
-                      <div className="bottom-panel">
-                        <div className="bottom-panel-header">
-                          <div className="bottom-panel-tabs">
-                            <button className="bottom-panel-tab bottom-panel-tab-active" id="btn-terminal-tab">
-                              <Terminal size={14} />
-                              <span>Terminal</span>
-                            </button>
-                            <button className="bottom-panel-tab" id="btn-output-tab">
-                              <span>Output</span>
-                            </button>
-                            <button className="bottom-panel-tab" id="btn-problems-tab">
-                              <span>Problems</span>
-                            </button>
-                          </div>
-                        </div>
-                        <div className="bottom-panel-body">
-                          <div className="terminal-placeholder">
-                            <span className="terminal-prompt">$</span>
-                            <span className="terminal-cursor">_</span>
-                          </div>
-                        </div>
-                      </div>
+                      <TerminalPanel />
                     </Panel>
                   </>
                 )}

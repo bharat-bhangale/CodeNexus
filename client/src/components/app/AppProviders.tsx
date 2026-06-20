@@ -257,6 +257,7 @@ function ShortcutDialog({
         ['Ctrl+Shift+M', 'Open decision memory'],
         ['Ctrl+Shift+R', 'Run code review'],
         ['Ctrl+Shift+H', 'Open health dashboard'],
+        ['Ctrl+Shift+X', 'Open regex playground'],
       ],
     },
     {

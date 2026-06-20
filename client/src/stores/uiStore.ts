@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 
-export type RightPanelView = 'chat' | 'intent' | 'memory' | 'health' | 'review' | 'visualize';
+export type RightPanelView =
+  | 'chat'
+  | 'intent'
+  | 'memory'
+  | 'health'
+  | 'review'
+  | 'visualize'
+  | 'regex';
 
 interface UIState {
   sidebarVisible: boolean;
